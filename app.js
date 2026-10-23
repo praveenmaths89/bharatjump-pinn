@@ -50,12 +50,9 @@
     "Other India": 1.00
   };
 
-  const AUTH_STORAGE_KEY = "bharatjump_gmail_auth_v1";
-  const SAVED_ACCOUNTS_KEY = "bharatjump_gmail_accounts_v1";
-  const DEFAULT_GMAIL_ACCOUNTS = [
-    { email: "praveenmaths89@gmail.com", name: "Praveen Chougale" },
-    { email: "praveenamznsports@gmail.com", name: "Praveen Chougale (Sports)" }
-  ];
+  const GOOGLE_OAUTH_CLIENT_ID = "834740587625-eqfls20j9udsn8vpga5au35f3j68d3gl.apps.googleusercontent.com";
+  const GOOGLE_OAUTH_REDIRECT_URI = "https://praveenmaths89.github.io/bharatjump-pinn/";
+  const AUTH_STORAGE_KEY = "bharatjump_google_oauth_verified_v2";
 
   let state = {
     currentStep: 1,
@@ -74,7 +71,7 @@
     detectedLanding: false,
     sessionLog: [],
     gmailUser: null,
-    savedGmailAccounts: DEFAULT_GMAIL_ACCOUNTS.slice(),
+    gsiInitialized: false,
     liveCoords: null
   };
 
@@ -950,132 +947,7 @@
     renderResultsScreen(res);
   }
 
-  // --- Gmail Authentication & Google Account Chooser ---
-  function loadGmailAuth() {
-    try {
-      const savedAccts = localStorage.getItem(SAVED_ACCOUNTS_KEY);
-      if (savedAccts) {
-        const parsed = JSON.parse(savedAccts);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          state.savedGmailAccounts = parsed;
-        }
-      }
-      const rawUser = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (rawUser) {
-        const u = JSON.parse(rawUser);
-        if (u && u.email) {
-          state.gmailUser = u;
-        }
-      }
-    } catch (_) {}
-    updateGmailUI();
-  }
-
-  function signInWithGmail(emailInput, nameInput) {
-    let email = (emailInput || "").trim().toLowerCase();
-    if (!email) return false;
-    if (!email.includes("@")) {
-      email = email + "@gmail.com";
-    }
-    const localPart = email.split("@")[0];
-    const derivedName = localPart
-      .replace(/[._0-9]+/g, " ")
-      .trim()
-      .replace(/\b\w/g, (c) => c.toUpperCase()) || "Athlete";
-    const name = (nameInput || "").trim() || derivedName;
-
-    state.gmailUser = {
-      email,
-      name,
-      signedInAt: new Date().toISOString()
-    };
-
-    try {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state.gmailUser));
-      const exists = state.savedGmailAccounts.some((a) => a.email.toLowerCase() === email);
-      if (!exists) {
-        state.savedGmailAccounts.unshift({ email, name });
-        localStorage.setItem(SAVED_ACCOUNTS_KEY, JSON.stringify(state.savedGmailAccounts.slice(0, 6)));
-      }
-    } catch (_) {}
-
-    updateGmailUI();
-    closeGmailModal();
-    return true;
-  }
-
-  function signOutGmail() {
-    state.gmailUser = null;
-    try {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    } catch (_) {}
-    updateGmailUI();
-    renderSavedGmailAccounts();
-  }
-
-  function updateGmailUI() {
-    const topAvatar = document.getElementById("topGmailAvatar");
-    const topText = document.getElementById("topGmailText");
-    const cardName = document.getElementById("cardGmailName");
-    const cardEmail = document.getElementById("cardGmailEmail");
-    const btnOpen = document.getElementById("btnOpenGmailModal");
-    const btnSignOut = document.getElementById("btnGmailSignOut");
-    const nameInput = document.getElementById("inAthleteName");
-
-    if (state.gmailUser && state.gmailUser.email) {
-      const initial = (state.gmailUser.name || state.gmailUser.email).charAt(0).toUpperCase();
-      topAvatar.textContent = initial;
-      topText.textContent = state.gmailUser.email.split("@")[0];
-      cardName.textContent = state.gmailUser.name;
-      cardEmail.textContent = state.gmailUser.email + " · Signed in";
-      btnOpen.textContent = "Switch";
-      if (btnSignOut) btnSignOut.style.display = "inline-block";
-      if (nameInput && (!nameInput.value || nameInput.value === "Praveen Chougale" || nameInput.value === "Athlete")) {
-        nameInput.value = state.gmailUser.name;
-      }
-    } else {
-      topAvatar.textContent = "G";
-      topText.textContent = "Sign in";
-      cardName.textContent = "Sign in with Gmail";
-      cardEmail.textContent = "Tap to link jumps to your Gmail account";
-      btnOpen.textContent = "Sign in";
-      if (btnSignOut) btnSignOut.style.display = "none";
-    }
-  }
-
-  function renderSavedGmailAccounts() {
-    const listEl = document.getElementById("gmailSavedAccountsList");
-    if (!listEl) return;
-    listEl.innerHTML = state.savedGmailAccounts.map((acct) => {
-      const init = (acct.name || acct.email).charAt(0).toUpperCase();
-      const isCurrent = state.gmailUser && state.gmailUser.email.toLowerCase() === acct.email.toLowerCase();
-      return `<button type="button" class="gmail-acct-item" data-email="${acct.email}" data-name="${acct.name}">
-        <div class="gmail-acct-avatar">${init}</div>
-        <div class="gmail-acct-info">
-          <div class="gmail-acct-name">${acct.name} ${isCurrent ? '<span style="color:#34d399;font-size:11px;">(Active)</span>' : ''}</div>
-          <div class="gmail-acct-addr">${acct.email}</div>
-        </div>
-      </button>`;
-    }).join("");
-
-    listEl.querySelectorAll(".gmail-acct-item").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        signInWithGmail(btn.getAttribute("data-email"), btn.getAttribute("data-name"));
-      });
-    });
-  }
-
-  function openGmailModal() {
-    renderSavedGmailAccounts();
-    const errEl = document.getElementById("gmailErrorMsg");
-    if (errEl) errEl.textContent = "";
-    document.getElementById("gmailModalBackdrop").classList.add("open");
-  }
-
-  function closeGmailModal() {
-    document.getElementById("gmailModalBackdrop").classList.remove("open");
-  }
-
+  // --- Real Google OAuth 2.0 Authentication (accounts.google.com Gmail + Password / 2FA) ---
   function decodeJwtPayload(token) {
     try {
       const base64Url = token.split(".")[1];
@@ -1092,27 +964,227 @@
     }
   }
 
-  function launchGoogleIdentityOAuth() {
-    const clientId = (document.getElementById("inGoogleClientId").value || "").trim();
-    const errEl = document.getElementById("gmailErrorMsg");
-    if (!clientId || !clientId.includes(".apps.googleusercontent.com")) {
-      errEl.textContent = "Enter a valid Google OAuth Client ID (.apps.googleusercontent.com) or pick your Gmail above.";
-      return;
+  function saveVerifiedGoogleUser(profile) {
+    state.gmailUser = {
+      email: profile.email,
+      name: profile.name || profile.given_name || profile.email.split("@")[0],
+      picture: profile.picture || "",
+      sub: profile.sub || "",
+      verified: true,
+      signedInAt: new Date().toISOString()
+    };
+    try {
+      localStorage.removeItem("bharatjump_gmail_auth_v1");
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state.gmailUser));
+    } catch (_) {}
+    updateGmailUI();
+    closeGmailModal();
+  }
+
+  async function checkOAuthRedirectCallback() {
+    // Check if returning from https://accounts.google.com/o/oauth2/v2/auth with #access_token=... or #id_token=...
+    const hash = window.location.hash || "";
+    if (!hash.includes("access_token=") && !hash.includes("id_token=") && !hash.includes("error=")) {
+      return false;
     }
-    if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-      errEl.textContent = "Google Identity script is still loading. Try again in a moment.";
-      return;
+
+    const params = new URLSearchParams(hash.replace(/^#/, ""));
+    const oauthError = params.get("error");
+    if (oauthError) {
+      const errEl = document.getElementById("gmailErrorMsg");
+      if (errEl) {
+        errEl.textContent = `Google Sign-In error: ${oauthError}. Please try signing in again.`;
+      }
+      try {
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+      } catch (_) {}
+      return false;
     }
-    window.google.accounts.id.initialize({
-      client_id: clientId,
-      callback: (resp) => {
-        const payload = decodeJwtPayload(resp.credential);
-        if (payload && payload.email) {
-          signInWithGmail(payload.email, payload.name || payload.given_name || "");
+
+    const accessToken = params.get("access_token");
+    const idToken = params.get("id_token");
+
+    // Clean URL hash immediately so token isn't left in address bar
+    try {
+      history.replaceState(null, "", window.location.pathname + window.location.search);
+    } catch (_) {}
+
+    if (idToken) {
+      const payload = decodeJwtPayload(idToken);
+      if (payload && payload.email) {
+        saveVerifiedGoogleUser(payload);
+        return true;
+      }
+    }
+
+    if (accessToken) {
+      try {
+        const resp = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (resp.ok) {
+          const profile = await resp.json();
+          if (profile && profile.email) {
+            saveVerifiedGoogleUser(profile);
+            return true;
+          }
+        }
+      } catch (_) {}
+    }
+    return false;
+  }
+
+  function loadGmailAuth() {
+    try {
+      // Remove any old unverified local login
+      localStorage.removeItem("bharatjump_gmail_auth_v1");
+      const rawUser = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (rawUser) {
+        const u = JSON.parse(rawUser);
+        if (u && u.email && u.verified === true) {
+          state.gmailUser = u;
         }
       }
-    });
-    window.google.accounts.id.prompt();
+    } catch (_) {}
+    updateGmailUI();
+  }
+
+  function startGoogleOAuthRedirect() {
+    const redirectUri = window.location.origin.includes("github.io")
+      ? GOOGLE_OAUTH_REDIRECT_URI
+      : (window.location.origin + window.location.pathname);
+
+    const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+    authUrl.searchParams.set("client_id", GOOGLE_OAUTH_CLIENT_ID);
+    authUrl.searchParams.set("redirect_uri", redirectUri);
+    authUrl.searchParams.set("response_type", "token");
+    authUrl.searchParams.set("scope", "openid email profile");
+    authUrl.searchParams.set("prompt", "select_account");
+    authUrl.searchParams.set("include_granted_scopes", "true");
+
+    // Navigate browser to real accounts.google.com where Google asks for Gmail + Password + 2FA
+    window.location.href = authUrl.toString();
+  }
+
+  function initGoogleIdentityButton() {
+    if (state.gsiInitialized) return;
+    if (!window.google || !window.google.accounts || !window.google.accounts.id) return;
+
+    try {
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_OAUTH_CLIENT_ID,
+        ux_mode: "popup",
+        auto_select: false,
+        callback: (resp) => {
+          if (resp && resp.credential) {
+            const payload = decodeJwtPayload(resp.credential);
+            if (payload && payload.email) {
+              saveVerifiedGoogleUser(payload);
+            }
+          }
+        }
+      });
+
+      const container = document.getElementById("googleGsiButtonContainer");
+      if (container) {
+        container.innerHTML = "";
+        window.google.accounts.id.renderButton(container, {
+          theme: "filled_blue",
+          size: "large",
+          type: "standard",
+          shape: "pill",
+          text: "signin_with",
+          logo_alignment: "left",
+          width: 290
+        });
+      }
+      state.gsiInitialized = true;
+    } catch (_) {}
+  }
+
+  function signOutGmail() {
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      try {
+        window.google.accounts.id.disableAutoSelect();
+      } catch (_) {}
+    }
+    state.gmailUser = null;
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch (_) {}
+    updateGmailUI();
+    openGmailModal();
+  }
+
+  function updateGmailUI() {
+    const topAvatar = document.getElementById("topGmailAvatar");
+    const topText = document.getElementById("topGmailText");
+    const cardName = document.getElementById("cardGmailName");
+    const cardEmail = document.getElementById("cardGmailEmail");
+    const btnOpen = document.getElementById("btnOpenGmailModal");
+    const btnSignOut = document.getElementById("btnGmailSignOut");
+    const btnCloseModal = document.getElementById("btnCloseGmailModal");
+    const signedInBox = document.getElementById("gmailSignedInBox");
+    const modalUserName = document.getElementById("modalUserName");
+    const modalUserEmail = document.getElementById("modalUserEmail");
+    const modalUserInitial = document.getElementById("modalUserInitial");
+    const modalUserPic = document.getElementById("modalUserPic");
+    const oauthBtnLabel = document.getElementById("btnGoogleOAuthLabel");
+    const nameInput = document.getElementById("inAthleteName");
+
+    if (state.gmailUser && state.gmailUser.email && state.gmailUser.verified) {
+      const initial = (state.gmailUser.name || state.gmailUser.email).charAt(0).toUpperCase();
+      topAvatar.textContent = initial;
+      topText.textContent = state.gmailUser.email.split("@")[0];
+      cardName.textContent = state.gmailUser.name;
+      cardEmail.textContent = state.gmailUser.email + " · Verified via Google";
+      btnOpen.textContent = "Account";
+
+      if (signedInBox) signedInBox.style.display = "block";
+      if (modalUserName) modalUserName.textContent = state.gmailUser.name;
+      if (modalUserEmail) modalUserEmail.textContent = state.gmailUser.email;
+      if (modalUserInitial) modalUserInitial.textContent = initial;
+      if (modalUserPic) {
+        if (state.gmailUser.picture) {
+          modalUserPic.src = state.gmailUser.picture;
+          modalUserPic.style.display = "block";
+          if (modalUserInitial) modalUserInitial.style.display = "none";
+        } else {
+          modalUserPic.style.display = "none";
+          if (modalUserInitial) modalUserInitial.style.display = "flex";
+        }
+      }
+      if (oauthBtnLabel) oauthBtnLabel.textContent = "Switch Google Account (accounts.google.com)";
+      if (btnSignOut) btnSignOut.style.display = "inline-block";
+      if (btnCloseModal) btnCloseModal.style.display = "inline-block";
+
+      if (nameInput && !nameInput.value.trim()) {
+        nameInput.value = state.gmailUser.name;
+      }
+    } else {
+      topAvatar.textContent = "G";
+      topText.textContent = "Sign in";
+      cardName.textContent = "Not signed in with Google";
+      cardEmail.textContent = "Tap Sign in to authenticate via accounts.google.com";
+      btnOpen.textContent = "Sign in";
+
+      if (signedInBox) signedInBox.style.display = "none";
+      if (oauthBtnLabel) oauthBtnLabel.textContent = "Continue to Google Sign-In (accounts.google.com)";
+      if (btnSignOut) btnSignOut.style.display = "none";
+      if (btnCloseModal) btnCloseModal.style.display = "none";
+    }
+  }
+
+  function openGmailModal() {
+    updateGmailUI();
+    initGoogleIdentityButton();
+    const errEl = document.getElementById("gmailErrorMsg");
+    if (errEl) errEl.textContent = "";
+    document.getElementById("gmailModalBackdrop").classList.add("open");
+  }
+
+  function closeGmailModal() {
+    document.getElementById("gmailModalBackdrop").classList.remove("open");
   }
 
   // --- Automatic Live Location Detection (GPS + Reverse Geocode + Automatic IP Fallback) ---
@@ -1162,7 +1234,6 @@
   }
 
   async function fallbackIPLocation() {
-    // Try two fast CORS-friendly IP geolocation endpoints automatically so location is ALWAYS chosen
     const endpoints = [
       {
         url: "https://ipwho.is/",
@@ -1217,7 +1288,6 @@
         const { latitude, longitude } = pos.coords;
         state.liveCoords = { lat: latitude, lon: longitude };
         try {
-          // Primary reverse geocoder: BigDataCloud client-side reverse geocode (fast, no rate-limit block)
           const bdcResp = await fetch(
             `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
           );
@@ -1232,7 +1302,6 @@
         } catch (_) {}
 
         try {
-          // Secondary reverse geocoder: OpenStreetMap Nominatim
           const resp = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
             { headers: { "Accept-Language": "en" } }
@@ -1248,7 +1317,6 @@
         }
       },
       () => {
-        // If user denies GPS prompt or indoors timeout, automatically choose location from live network
         fallbackIPLocation();
       },
       { enableHighAccuracy: true, timeout: 6500, maximumAge: 60000 }
@@ -1299,37 +1367,36 @@
   }
 
   // --- Initialize App & Event Listeners ---
-  window.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("DOMContentLoaded", async () => {
     loadSessionLog();
     loadGmailAuth();
     renderSessionLogUI();
 
-    // Automatically detect and choose live location on app startup!
+    // Check if returning from Google OAuth 2.0 redirect (#access_token=...)
+    await checkOAuthRedirectCallback();
+
+    // Automatically detect and choose live location on app startup
     detectPlaceFromGPS();
 
-    // If not signed in yet, show Gmail sign-in sheet on first visit
-    if (!state.gmailUser) {
+    // Try rendering the official Google Identity button as soon as GSI script loads
+    setTimeout(initGoogleIdentityButton, 500);
+    setTimeout(initGoogleIdentityButton, 1500);
+
+    // Require real Google Sign-In if not yet authenticated
+    if (!state.gmailUser || !state.gmailUser.verified) {
       openGmailModal();
     }
 
-    // Gmail Modal Listeners
+    // Google OAuth Modal Listeners
     document.getElementById("btnTopGmail").addEventListener("click", openGmailModal);
     document.getElementById("btnOpenGmailModal").addEventListener("click", openGmailModal);
-    document.getElementById("btnCloseGmailModal").addEventListener("click", closeGmailModal);
-    document.getElementById("btnGmailSignOut").addEventListener("click", signOutGmail);
-    document.getElementById("btnLaunchGoogleOAuth").addEventListener("click", launchGoogleIdentityOAuth);
-
-    document.getElementById("gmailLoginForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const emailVal = (document.getElementById("inGmailAddress").value || "").trim();
-      const nameVal = (document.getElementById("inGmailName").value || "").trim();
-      const errEl = document.getElementById("gmailErrorMsg");
-      if (!emailVal) {
-        errEl.textContent = "Please enter your Gmail address (e.g. yourname@gmail.com).";
-        return;
+    document.getElementById("btnCloseGmailModal").addEventListener("click", () => {
+      if (state.gmailUser && state.gmailUser.verified) {
+        closeGmailModal();
       }
-      signInWithGmail(emailVal, nameVal);
     });
+    document.getElementById("btnGmailSignOut").addEventListener("click", signOutGmail);
+    document.getElementById("btnGoogleOAuthRedirect").addEventListener("click", startGoogleOAuthRedirect);
 
     // Hardware/Browser Back Button handler
     window.addEventListener("popstate", (ev) => {
@@ -1403,10 +1470,8 @@
     document.getElementById("btnFinishJump").addEventListener("click", finishLiveJump);
     document.getElementById("btnBackToSetup").addEventListener("click", () => showScreen(1));
 
-    // Screen 3 Actions:
-    // 1. "Start New Jump (Live Sensor)" -> launches guided sensor capture on Screen 2
+    // Screen 3 Actions
     document.getElementById("btnJumpAgain").addEventListener("click", startGuidedJump);
-    // 2. "⚡ New Simulated Jump" -> immediately generates a fresh jump & updates all values on Screen 3!
     const btnSimAnother = document.getElementById("btnSimAnotherJump");
     if (btnSimAnother) {
       btnSimAnother.addEventListener("click", () => {
@@ -1414,7 +1479,6 @@
         renderResultsScreen(res);
       });
     }
-    // 3. "← Athlete / Place" -> returns to Screen 1
     document.getElementById("btnEditAthlete").addEventListener("click", () => showScreen(1));
 
     // Plot Mode Switcher (Force / Velocity / Power)

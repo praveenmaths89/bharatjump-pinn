@@ -11,13 +11,13 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <link rel="stylesheet" href="./styles.css?v=20261023d" />
-  <!-- Google Identity Services for OAuth 2.0 / Gmail Sign-In -->
+  <link rel="stylesheet" href="./styles.css?v=20261023e" />
+  <!-- Official Google Identity Services SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <div class="mobile-viewport">
-    <!-- Top Bar with Easy Back Button + Gmail Account Pill -->
+    <!-- Top Bar with Easy Back Button + Verified Google Account Pill -->
     <header class="app-topbar">
       <div class="nav-left">
         <button type="button" class="btn-back" id="btnTopBack" aria-label="Go back">
@@ -34,8 +34,8 @@
         </div>
       </div>
 
-      <!-- Top-Right Gmail Account Button / Badge -->
-      <button type="button" class="gmail-top-pill" id="btnTopGmail" title="Gmail Account">
+      <!-- Top-Right Google Account Button / Badge -->
+      <button type="button" class="gmail-top-pill" id="btnTopGmail" title="Google Account">
         <span class="gmail-avatar" id="topGmailAvatar">G</span>
         <span class="gmail-top-text" id="topGmailText">Sign in</span>
       </button>
@@ -48,10 +48,10 @@
       <button type="button" class="step-tab" data-step="3" id="tabStep3">3. Analysis</button>
     </nav>
 
-    <!-- SCREEN 1: ATHLETE, GMAIL ACCOUNT & AUTO LIVE LOCATION -->
+    <!-- SCREEN 1: ATHLETE, GOOGLE ACCOUNT & AUTO LIVE LOCATION -->
     <section class="screen active" id="screen1">
       <div class="scroll-body">
-        <!-- Gmail Account Strip on Screen 1 -->
+        <!-- Verified Google Account Strip on Screen 1 -->
         <div class="gmail-account-card" id="gmailCardBanner">
           <div class="gmail-card-left">
             <div class="gmail-g-icon" id="cardGmailAvatar">
@@ -63,8 +63,8 @@
               </svg>
             </div>
             <div style="min-width:0;">
-              <div class="gmail-card-name" id="cardGmailName">Not signed in with Gmail</div>
-              <div class="gmail-card-email" id="cardGmailEmail">Sign in with your Gmail to link jumps</div>
+              <div class="gmail-card-name" id="cardGmailName">Not signed in with Google</div>
+              <div class="gmail-card-email" id="cardGmailEmail">Sign in via Google OAuth to link jumps</div>
             </div>
           </div>
           <button type="button" class="btn-gmail-switch" id="btnOpenGmailModal">Sign in</button>
@@ -74,7 +74,7 @@
         <div class="card">
           <div class="athlete-name-row">
             <label for="inAthleteName" class="region-label">Athlete Name / ID</label>
-            <input type="text" id="inAthleteName" class="field-control" placeholder="Athlete Name (auto-filled from Gmail)" value="Praveen Chougale" />
+            <input type="text" id="inAthleteName" class="field-control" placeholder="Athlete Name (populated after Google Sign-In)" value="" />
           </div>
 
           <div class="segmented-control" role="tablist">
@@ -390,7 +390,7 @@
     </section>
   </div>
 
-  <!-- GMAIL LOGIN / GOOGLE ACCOUNT CHOOSER MODAL -->
+  <!-- REAL GOOGLE OAUTH 2.0 LOGIN MODAL (Redirects to accounts.google.com for Gmail + Password / 2FA) -->
   <div class="gmail-modal-backdrop" id="gmailModalBackdrop" aria-hidden="true">
     <div class="gmail-modal-sheet" role="dialog" aria-labelledby="gmailModalTitle">
       <div class="gmail-modal-header">
@@ -401,64 +401,52 @@
             <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
           </svg>
-          <span class="google-wordmark">Sign in with Google</span>
+          <span class="google-wordmark">Google OAuth 2.0 Authentication</span>
         </div>
-        <h3 class="gmail-modal-title" id="gmailModalTitle">Choose a Gmail account</h3>
-        <p class="gmail-modal-sub">to continue to <strong>BharatJump Talent &amp; Force Lab</strong></p>
+        <h3 class="gmail-modal-title" id="gmailModalTitle">Sign in with your Gmail</h3>
+        <p class="gmail-modal-sub" id="gmailModalSub">
+          Redirects to <strong>accounts.google.com</strong> where Google verifies your Gmail address, password, and 2-Step Verification.
+        </p>
       </div>
 
-      <!-- Quick-Pick Saved / Detected Gmail Accounts -->
-      <div class="gmail-acct-list" id="gmailSavedAccountsList"></div>
-
-      <!-- Enter / Use Another Gmail Account Form -->
-      <form class="gmail-custom-form" id="gmailLoginForm" novalidate>
-        <div class="gmail-form-label">Or enter your Gmail address</div>
-        <input
-          type="email"
-          id="inGmailAddress"
-          class="gmail-input"
-          placeholder="yourname@gmail.com"
-          autocomplete="username email"
-          inputmode="email"
-          required
-        />
-        <input
-          type="text"
-          id="inGmailName"
-          class="gmail-input"
-          placeholder="Your Full Name (e.g. Praveen Chougale)"
-          autocomplete="name"
-        />
-        <div class="gmail-error" id="gmailErrorMsg"></div>
-        <button type="submit" class="btn-google-continue">
-          Continue with Gmail
-        </button>
-      </form>
-
-      <!-- Optional Google Cloud OAuth Client ID popup trigger -->
-      <details class="oauth-advanced">
-        <summary>Have a Google Cloud OAuth Client ID?</summary>
-        <div class="oauth-adv-body">
-          <input
-            type="text"
-            id="inGoogleClientId"
-            class="gmail-input"
-            placeholder="xxxx.apps.googleusercontent.com"
-            style="font-size:11.5px; padding:8px 10px;"
-          />
-          <button type="button" class="btn-secondary" id="btnLaunchGoogleOAuth" style="padding:8px 10px; font-size:12px;">
-            Launch Google OAuth Popup
-          </button>
+      <!-- Current Signed-In User Box (shown when already authenticated) -->
+      <div class="gmail-signedin-box" id="gmailSignedInBox" style="display:none;">
+        <div class="gmail-signedin-row">
+          <img id="modalUserPic" src="" alt="" class="gmail-user-pic" style="display:none;" />
+          <div class="gmail-acct-avatar" id="modalUserInitial">P</div>
+          <div style="min-width:0; flex:1;">
+            <div class="gmail-acct-name" id="modalUserName">Signed In</div>
+            <div class="gmail-acct-addr" id="modalUserEmail">user@gmail.com</div>
+          </div>
+          <span style="font-size:11px; color:#34d399; font-weight:800;">✓ Verified</span>
         </div>
-      </details>
+      </div>
+
+      <!-- Primary Action: Full Google OAuth 2.0 Redirect (accounts.google.com email + password + 2FA) -->
+      <button type="button" class="btn-google-oauth-main" id="btnGoogleOAuthRedirect">
+        <span class="google-btn-icon">
+          <svg width="18" height="18" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+        </span>
+        <span id="btnGoogleOAuthLabel">Continue to Google Sign-In (accounts.google.com)</span>
+      </button>
+
+      <!-- Official Google Identity Services Button Container -->
+      <div class="gsi-btn-wrap" id="googleGsiButtonContainer"></div>
+
+      <div class="gmail-error" id="gmailErrorMsg"></div>
 
       <div class="gmail-modal-footer">
-        <button type="button" class="btn-gmail-signout" id="btnGmailSignOut" style="display:none;">Sign out</button>
-        <button type="button" class="btn-gmail-close" id="btnCloseGmailModal">Continue without changing</button>
+        <button type="button" class="btn-gmail-signout" id="btnGmailSignOut" style="display:none;">Sign out of Gmail</button>
+        <button type="button" class="btn-gmail-close" id="btnCloseGmailModal" style="display:none;">Back to App</button>
       </div>
     </div>
   </div>
 
-  <script src="./app.js?v=20261023d"></script>
+  <script src="./app.js?v=20261023e"></script>
 </body>
 </html>

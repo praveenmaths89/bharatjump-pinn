@@ -1234,3 +1234,61 @@ canvas#forceCanvas {
   font-weight: 600;
   cursor: pointer;
 }
+
+/* Real Google OAuth 2.0 Button & Verified Account Box */
+.btn-google-oauth-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.btn-google-oauth-main:active {
+  transform: scale(0.98);
+}
+
+.google-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gsi-btn-wrap {
+  display: flex;
+  justify-content: center;
+  min-height: 40px;
+}
+
+.gmail-signedin-box {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.gmail-signedin-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gmail-user-pic {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
