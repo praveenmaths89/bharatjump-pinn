@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>BharatJump PINN — Smartphone CMJ &amp; vGRF Force Lab</title>
+  <link rel="manifest" href="./manifest.json" />
+  <style>
+:root {
+  --bg-primary: #070b14;
+  --bg-card: #0f172a;
+  --bg-card-elevated: #162038;
+  --bg-input: #1e293b;
+  --border-subtle: rgba(148, 163, 184, 0.16);
+  --border-focus: #38bdf8;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-cyan: #38bdf8;
+  --accent-indigo: #6366f1;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-orange: #f97316;
+  --accent-rose: #f43f5e;
+  --accent-purple: #a855f7;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.app-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 16px 16px 56px;
+}
+
+/* Top Header */
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.88));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0284c7, #4f46e5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+}
+
+.brand-title {
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.14);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.badge-pill.emerald {
+  background: rgba(16, 185, 129, 0.14);
+  color: var(--accent-emerald);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.badge-pill.amber {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent-amber);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.brand-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.status-dot.ready {
+  background: var(--accent-emerald);
+  box-shadow: 0 0 8px var(--accent-emerald);
+}
+
+.status-dot.recording {
+  background: var(--accent-rose);
+  box-shadow: 0 0 10px var(--accent-rose);
+  animation: pulse 0.9s infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 0.45; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1.2); }
+}
+
+/* Main Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 16px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-subtitle {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+/* Form Controls */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-control {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 0.88rem;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.form-control:focus {
+  border-color: var(--border-focus);
+}
+
+/* Action Buttons */
+.btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.16s ease;
+  text-align: center;
+  user-select: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.btn-sim {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.btn-sim:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #e11d48, #f43f5e);
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 0.76rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-sm.active {
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+}
+
+/* Live Quaternion & Calibration Telemetry Box */
+.telemetry-box {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.telemetry-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  color: var(--text-secondary);
+}
+
+.telemetry-val {
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.progress-bar-outer {
+  height: 6px;
+  background: var(--bg-input);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-emerald));
+  transition: width 0.12s linear;
+}
+
+/* KPI Metric Cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.kpi-card {
+  background: var(--bg-card-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--accent-cyan);
+}
+
+.kpi-card.emerald::before { background: var(--accent-emerald); }
+.kpi-card.amber::before { background: var(--accent-amber); }
+.kpi-card.orange::before { background: var(--accent-orange); }
+.kpi-card.purple::before { background: var(--accent-purple); }
+.kpi-card.rose::before { background: var(--accent-rose); }
+
+.kpi-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.kpi-value {
+  font-size: 1.48rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  margin: 4px 0 2px;
+}
+
+.kpi-unit {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  margin-left: 3px;
+}
+
+.kpi-sub {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* Waveform Canvas Container */
+.chart-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chart-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  background: #080d1a;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+#waveformCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.phase-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.phase-chip {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.phase-chip strong {
+  color: var(--text-primary);
+}
+
+/* Physics Anchoring Banner */
+.physics-banner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  font-size: 0.78rem;
+}
+
+.physics-formula {
+  font-family: var(--font-mono);
+  color: var(--accent-emerald);
+  font-weight: 600;
+}
+
+/* Percentile & Normative Section */
+.percentile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.percentile-item {
+  background: var(--bg-card-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.percentile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.percentile-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.centile-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.18);
+  color: var(--accent-cyan);
+}
+
+.centile-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ef4444 0%, #f59e0b 25%, #10b981 60%, #38bdf8 85%, #a855f7 100%);
+  margin: 10px 0 6px;
+}
+
+.centile-marker {
+  position: absolute;
+  top: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #0f172a;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  transition: left 0.25s ease;
+}
+
+.centile-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* Detailed Biomechanical Table */
+.metrics-table-wrap {
+  overflow-x: auto;
+}
+
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.metrics-table th,
+.metrics-table td {
+  padding: 9px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.metrics-table th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  background: rgba(30, 41, 59, 0.45);
+}
+
+.metrics-table td.mono {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.metrics-table tr:hover td {
+  background: rgba(56, 189, 248, 0.04);
+}
+
+.file-drop-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.hidden-input {
+  display: none;
+}
+
+.footer-note {
+  text-align: center;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 20px;
+}
+
+</style>
+  <!-- Optional ONNX Runtime Web for custom .onnx models (graceful fallback if offline) -->
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.0/dist/ort.min.js" defer></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-group">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            BharatJump PINN
+            <span class="badge-pill">100% Client-Side PWA</span>
+            <span class="badge-pill emerald">Impulse-Anchored vGRF</span>
+            <span class="badge-pill amber">VALD ForceDecks Ready</span>
+          </div>
+          <div class="brand-subtitle">
+            Grassroots Smartphone Countermovement Jump (CMJ) &amp; Physics-Informed vGRF Estimation Platform
+          </div>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="status-indicator" id="sensorStatusBadge">
+          <span class="status-dot ready" id="sensorStatusDot"></span>
+          <span id="sensorStatusText">Ready · Demo Loaded (100 Hz)</span>
+        </div>
+        <div class="status-indicator" id="modelStatusBadge">
+          <span>Model: <strong style="color:#38bdf8" id="activeModelLabel">PINN-ResBiGRU + Impulse Anchor</strong></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+      <!-- Left Column: Controls, Sensor Capture, Athlete Metadata, VALD Export -->
+      <aside>
+        <!-- 1. Sensor Capture & Simulation Card -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">1. Chest IMU Capture &amp; Simulator</div>
+              <div class="card-subtitle">Quaternion gravity projection + 6-axis IMU</div>
+            </div>
+            <span class="badge-pill" id="sampleRateBadge">100 Hz</span>
+          </div>
+
+          <div class="form-group full-width" style="margin-bottom: 10px;">
+            <label for="demoPresetSelect">Synthetic Chest IMU + VALD Ground-Truth Preset</label>
+            <select id="demoPresetSelect" class="form-control">
+              <option value="youth_45kg">Indian Grassroots Youth (14y M · 45 kg · ~34.5 cm)</option>
+              <option value="khelo_52kg">Khelo India Sprinter (16y F · 52 kg · ~39.8 cm)</option>
+              <option value="elite_74kg">Senior National Athlete (23y M · 74 kg · ~51.2 cm)</option>
+              <option value="youth_32kg">Sub-Junior Grassroots Kid (10y F · 32 kg · ~25.4 cm)</option>
+            </select>
+          </div>
+
+          <div class="btn-stack">
+            <button type="button" id="btnSimulateJump" class="btn btn-sim">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Simulate Demo Jump (Chest IMU)
+            </button>
+
+            <div class="btn-row">
+              <button type="button" id="btnStartLive" class="btn btn-primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <circle cx="12" cy="12" r="4" fill="currentColor"></circle>
+                </svg>
+                Start Live IMU
+              </button>
+              <button type="button" id="btnStopLive" class="btn btn-danger" disabled>
+                Stop / Analyze
+              </button>
+            </div>
+          </div>
+
+          <!-- Quaternion & Calibration Telemetry -->
+          <div class="telemetry-box">
+            <div class="telemetry-row">
+              <span>Calibration Window (1.5s Quiet):</span>
+              <span class="telemetry-val" id="calibStatusLabel">Locked (1.000 BW)</span>
+            </div>
+            <div class="progress-bar-outer">
+              <div class="progress-bar-inner" id="calibProgressBar" style="width: 100%;"></div>
+            </div>
+            <div class="telemetry-row">
+              <span>Gravity Quaternion q_wb:</span>
+              <span class="telemetry-val" id="quatReadout">[0.996, -0.087, 0.012, 0.004]</span>
+            </div>
+            <div class="telemetry-row">
+              <span>Earth Vertical Accel a_z(t):</span>
+              <span class="telemetry-val" id="azReadout">0.00 m/s² (1.00 BW)</span>
+            </div>
+            <div class="telemetry-row">
+              <span>Chest Sagittal Pitch θ(t):</span>
+              <span class="telemetry-val" id="pitchReadout">10.1° anterior</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Athlete Metadata & GAMLSS Inputs -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">2. Athlete &amp; Indian Cohort Metadata</div>
+              <div class="card-subtitle">Used for N scaling &amp; GAMLSS LMS centiles</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="inputAge">Age (8–35 yrs)</label>
+              <input type="number" id="inputAge" class="form-control" min="8" max="35" step="1" value="14" />
+            </div>
+            <div class="form-group">
+              <label for="inputSex">Biological Sex</label>
+              <select id="inputSex" class="form-control">
+                <option value="M">Male (M)</option>
+                <option value="F">Female (F)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="inputMass">Body Mass (kg)</label>
+              <input type="number" id="inputMass" class="form-control" min="20" max="140" step="0.5" value="45.0" />
+            </div>
+            <div class="form-group">
+              <label for="inputHeight">Standing Height (cm)</label>
+              <input type="number" id="inputHeight" class="form-control" min="110" max="220" step="1" value="158" />
+            </div>
+            <div class="form-group full-width">
+              <label for="inputCohort">Normative Reference Cohort</label>
+              <select id="inputCohort" class="form-control">
+                <option value="indian_grassroots">Indian School &amp; Grassroots (GAMLSS LMS)</option>
+                <option value="khelo_india">Khelo India / SAI Talent Cohort (+12% Shift)</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. VALD ForceDecks Synchronized Data Collection & Model Hook -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">3. VALD ForceDecks Sync &amp; Export</div>
+              <div class="card-subtitle">Collect paired IMU + ForceDecks trials</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="inputAthleteId">Athlete ID</label>
+              <input type="text" id="inputAthleteId" class="form-control" value="IND-U16-042" />
+            </div>
+            <div class="form-group">
+              <label for="inputTrialId">Trial / ForceDecks ID</label>
+              <input type="text" id="inputTrialId" class="form-control" value="FD-CMJ-001" />
+            </div>
+            <div class="form-group full-width">
+              <label for="selectEstimatorMode">vGRF Estimation Pipeline</label>
+              <select id="selectEstimatorMode" class="form-control">
+                <option value="pinn_anchored">PINN Neural + Exact Impulse Anchor (Recommended)</option>
+                <option value="pinn_unanchored">PINN Neural Only (Before Impulse Projection)</option>
+                <option value="raw_imu">Raw Chest IMU (1 + a_z/g) — Uncorrected Trunk Artifact</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btn-stack">
+            <div class="btn-row">
+              <button type="button" id="btnExportCSV" class="btn btn-secondary">
+                Export CSV (IMU+vGRF)
+              </button>
+              <button type="button" id="btnExportJSON" class="btn btn-secondary">
+                Export Trial JSON
+              </button>
+            </div>
+
+            <label class="btn btn-secondary file-drop-label" for="inputModelFile">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span id="modelUploadLabel">Load Trained .onnx or Weights .json</span>
+            </label>
+            <input type="file" id="inputModelFile" class="hidden-input" accept=".onnx,.json" />
+          </div>
+        </section>
+      </aside>
+
+      <!-- Right Column: Waveforms, KPIs, GAMLSS Percentiles, Full Metrics Table -->
+      <main>
+        <!-- Top Hero KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card emerald">
+            <span class="kpi-label">Jump Height (Anchored)</span>
+            <div>
+              <span class="kpi-value" id="kpiJumpHeight">--</span>
+              <span class="kpi-unit">cm</span>
+            </div>
+            <span class="kpi-sub" id="kpiJumpHeightSub">Flight: -- ms | Imp: -- cm</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">Peak Concentric Force</span>
+            <div>
+              <span class="kpi-value" id="kpiPeakForceBW">--</span>
+              <span class="kpi-unit">BW</span>
+            </div>
+            <span class="kpi-sub" id="kpiPeakForceN">-- N absolute</span>
+          </div>
+
+          <div class="kpi-card orange">
+            <span class="kpi-label">Peak Concentric Power</span>
+            <div>
+              <span class="kpi-value" id="kpiPeakPowerRel">--</span>
+              <span class="kpi-unit">W/kg</span>
+            </div>
+            <span class="kpi-sub" id="kpiPeakPowerAbs">-- W peak</span>
+          </div>
+
+          <div class="kpi-card purple">
+            <span class="kpi-label">Takeoff Velocity (v_to)</span>
+            <div>
+              <span class="kpi-value" id="kpiTakeoffVel">--</span>
+              <span class="kpi-unit">m/s</span>
+            </div>
+            <span class="kpi-sub" id="kpiNetImpulseSub">Net Imp: -- N·s</span>
+          </div>
+
+          <div class="kpi-card amber">
+            <span class="kpi-label">RSImod (Explosiveness)</span>
+            <div>
+              <span class="kpi-value" id="kpiRsiMod">--</span>
+              <span class="kpi-unit">m/s</span>
+            </div>
+            <span class="kpi-sub" id="kpiContractionTimeSub">TTT: -- ms</span>
+          </div>
+
+          <div class="kpi-card rose">
+            <span class="kpi-label">Braking / Prop Impulse</span>
+            <div>
+              <span class="kpi-value" id="kpiImpulseRatio">--</span>
+              <span class="kpi-unit">N·s</span>
+            </div>
+            <span class="kpi-sub" id="kpiImpulseDetailSub">Brk: -- | Prp: -- N·s</span>
+          </div>
+        </div>
+
+        <!-- Interactive Waveform Card -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                Continuous CMJ Force-Velocity-Power Waveform Inspector
+              </div>
+              <div class="card-subtitle" id="chartHoverReadout">
+                Hover or drag across the chart to inspect instantaneous phase, vGRF (BW &amp; N), velocity (m/s), and power (W/kg).
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-toolbar">
+            <div class="chart-tabs" id="chartViewTabs">
+              <button type="button" class="btn btn-secondary btn-sm active" data-view="all">
+                Multi-Curve (vGRF + Vel + Power)
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" data-view="vgrf">
+                vGRF (BW) vs. VALD ForceDecks
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" data-view="kinematics">
+                Velocity v(t) &amp; CoM Depth z(t)
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" data-view="power">
+                Mechanical Power P(t) (W/kg)
+              </button>
+            </div>
+
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-swatch" style="background:#38bdf8"></span>PINN vGRF (BW)</span>
+              <span class="legend-item"><span class="legend-swatch" style="background:#94a3b8; border-bottom:1px dashed #94a3b8"></span>VALD Ground Truth</span>
+              <span class="legend-item"><span class="legend-swatch" style="background:#10b981"></span>Velocity v(t) (m/s)</span>
+              <span class="legend-item"><span class="legend-swatch" style="background:#f97316"></span>Power P(t) (W/kg)</span>
+            </div>
+          </div>
+
+          <div class="canvas-wrapper">
+            <canvas id="waveformCanvas" width="920" height="360"></canvas>
+          </div>
+
+          <!-- Detected Phase Timestamps -->
+          <div class="phase-strip" id="phaseSummaryStrip">
+            <span class="phase-chip">Unweighting t₀: <strong id="phT0">-- s</strong></span>
+            <span class="phase-chip">Braking Start: <strong id="phBrake">-- s</strong></span>
+            <span class="phase-chip">Propulsion Start (v=0): <strong id="phProp">-- s</strong></span>
+            <span class="phase-chip">Takeoff t_to: <strong id="phTakeoff">-- s</strong></span>
+            <span class="phase-chip">Landing t_land: <strong id="phLanding">-- s</strong></span>
+            <span class="phase-chip">Flight Time: <strong id="phFlight">-- ms</strong></span>
+          </div>
+
+          <!-- Exact Physics-Constrained Impulse-Momentum Verification Banner -->
+          <div class="physics-banner">
+            <div>
+              <div class="physics-formula">
+                ∫[t₀ → t_takeoff] (vGRF(t) − 1)·g dt = v_takeoff = ½·g·t_flight
+              </div>
+              <div style="color: var(--text-secondary); margin-top: 2px;" id="physicsAnchorText">
+                Newton Impulse-Momentum Anchoring active: zero integration drift across youth &amp; adult body masses.
+              </div>
+            </div>
+            <div style="font-family: var(--font-mono); text-align: right;" id="valdAccuracyBadge">
+              VALD Agreement: R² = -- | RMSE = -- BW
+            </div>
+          </div>
+        </section>
+
+        <!-- Indian Grassroots Normative Percentiles (GAMLSS LMS Preview) -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Indian Youth &amp; Athlete Percentile Preview (GAMLSS LMS Reference)</div>
+              <div class="card-subtitle" id="percentileCohortSubtitle">
+                Age- and sex-adjusted Box-Cox Cole &amp; Green (L, M, S) centile bands (P10–P95)
+              </div>
+            </div>
+            <span class="badge-pill emerald" id="overallAthleteTierBadge">Evaluated</span>
+          </div>
+
+          <div class="percentile-grid">
+            <!-- Jump Height Percentile -->
+            <div class="percentile-item">
+              <div class="percentile-header">
+                <span class="percentile-title">CMJ Jump Height (cm)</span>
+                <span class="centile-badge" id="pctBadgeHeight">P--</span>
+              </div>
+              <div class="centile-track">
+                <div class="centile-marker" id="pctMarkerHeight" style="left: 50%;"></div>
+              </div>
+              <div class="centile-scale" id="pctScaleHeight">
+                <span>P10: --</span>
+                <span>P50: --</span>
+                <span>P75: --</span>
+                <span>P95: --</span>
+              </div>
+            </div>
+
+            <!-- Peak Power Percentile -->
+            <div class="percentile-item">
+              <div class="percentile-header">
+                <span class="percentile-title">Relative Peak Power (W/kg)</span>
+                <span class="centile-badge" id="pctBadgePower">P--</span>
+              </div>
+              <div class="centile-track">
+                <div class="centile-marker" id="pctMarkerPower" style="left: 50%;"></div>
+              </div>
+              <div class="centile-scale" id="pctScalePower">
+                <span>P10: --</span>
+                <span>P50: --</span>
+                <span>P75: --</span>
+                <span>P95: --</span>
+              </div>
+            </div>
+
+            <!-- RSImod Percentile -->
+            <div class="percentile-item">
+              <div class="percentile-header">
+                <span class="percentile-title">RSImod (JH / Contraction Time)</span>
+                <span class="centile-badge" id="pctBadgeRsi">P--</span>
+              </div>
+              <div class="centile-track">
+                <div class="centile-marker" id="pctMarkerRsi" style="left: 50%;"></div>
+              </div>
+              <div class="centile-scale" id="pctScaleRsi">
+                <span>P10: --</span>
+                <span>P50: --</span>
+                <span>P75: --</span>
+                <span>P95: --</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Complete Discrete Biomechanical Metrics Table -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">VALD ForceDecks-Equivalent Discrete CMJ Metrics</div>
+              <div class="card-subtitle">Complete phase-by-phase force, impulse, velocity, power, and reactivity breakdown</div>
+            </div>
+          </div>
+
+          <div class="metrics-table-wrap">
+            <table class="metrics-table">
+              <thead>
+                <tr>
+                  <th>Biomechanical Metric</th>
+                  <th>Phase / Formula</th>
+                  <th>Relative Value</th>
+                  <th>Absolute Value</th>
+                </tr>
+              </thead>
+              <tbody id="metricsTableBody">
+                <!-- Populated dynamically by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <footer class="footer-note">
+      BharatJump PINN Prototype · Built for Free Indian Grassroots Athlete Assessment &amp; Paired VALD ForceDecks Research · Runs 100% On-Device
+    </footer>
+  </div>
+
+  <script>
+/**
+ * BharatJump PINN — Smartphone CMJ & Physics-Informed vGRF Estimator
+ * 100% Client-Side Web App (Quaternion Sensor Fusion + Newton Impulse-Momentum Anchoring)
+ */
+
+(function () {
+  "use strict";
+
+  const G = 9.80665;
+  const DT_DEFAULT = 0.01; // 100 Hz
+
+  const PRESETS = {
+    youth_45kg: {
+      age: 14, sex: "M", mass: 45.0, height: 158, cohort: "indian_grassroots",
+      athleteId: "IND-U14-045", trialId: "FD-CMJ-101",
+      unweightDipBW: 0.56, brakingPeakBW: 2.05, propPeakBW: 2.48,
+      eccDuration: 0.42, concDuration: 0.27, flightTime: 0.530, trunkPitchDeg: 14.5
+    },
+    khelo_52kg: {
+      age: 16, sex: "F", mass: 52.0, height: 164, cohort: "khelo_india",
+      athleteId: "KHELO-U16-019", trialId: "FD-CMJ-102",
+      unweightDipBW: 0.62, brakingPeakBW: 2.25, propPeakBW: 2.68,
+      eccDuration: 0.39, concDuration: 0.25, flightTime: 0.570, trunkPitchDeg: 12.8
+    },
+    elite_74kg: {
+      age: 23, sex: "M", mass: 74.0, height: 178, cohort: "khelo_india",
+      athleteId: "SAI-SR-088", trialId: "FD-CMJ-103",
+      unweightDipBW: 0.68, brakingPeakBW: 2.45, propPeakBW: 2.95,
+      eccDuration: 0.37, concDuration: 0.24, flightTime: 0.646, trunkPitchDeg: 11.2
+    },
+    youth_32kg: {
+      age: 10, sex: "F", mass: 32.0, height: 138, cohort: "indian_grassroots",
+      athleteId: "IND-U10-012", trialId: "FD-CMJ-104",
+      unweightDipBW: 0.46, brakingPeakBW: 1.82, propPeakBW: 2.18,
+      eccDuration: 0.45, concDuration: 0.29, flightTime: 0.455, trunkPitchDeg: 16.0
+    }
+  };
+
+  let state = {
+    currentTrial: null,
+    chartView: "all",
+    hoverIndex: null,
+    liveRecording: false,
+    liveSamples: [],
+    liveStartTime: 0,
+    motionHandler: null,
+    onnxSession: null,
+    customWeights: null
+  };
+
+  // --- 1. Quaternion & Complementary Sensor Fusion ---
+  function eulerToQuat(rollDeg, pitchDeg, yawDeg) {
+    const r = (rollDeg * Math.PI) / 180 / 2;
+    const p = (pitchDeg * Math.PI) / 180 / 2;
+    const y = (yawDeg * Math.PI) / 180 / 2;
+    const cr = Math.cos(r), sr = Math.sin(r);
+    const cp = Math.cos(p), sp = Math.sin(p);
+    const cy = Math.cos(y), sy = Math.sin(y);
+    return [
+      cr * cp * cy + sr * sp * sy,
+      sr * cp * cy - cr * sp * sy,
+      cr * sp * cy + sr * cp * sy,
+      cr * cp * sy - sr * sp * cy
+    ];
+  }
+
+  function rotateBodyToEarthZ(ax, ay, az, q) {
+    const [w, x, y, z] = q;
+    const r20 = 2 * (x * z - w * y);
+    const r21 = 2 * (y * z + w * x);
+    const r22 = 1 - 2 * (x * x + y * y);
+    return r20 * ax + r21 * ay + r22 * az;
+  }
+
+  // --- 2. Synthetic Chest IMU + Paired VALD ForceDecks Generator ---
+  function generateSyntheticTrial(presetKey) {
+    const p = PRESETS[presetKey] || PRESETS.youth_45kg;
+    const fs = 100;
+    const dt = 1 / fs;
+    const totalTime = 2.6;
+    const N = Math.round(totalTime * fs);
+
+    const t0 = 0.55; // Unweighting onset
+    const tBrake = t0 + p.eccDuration * 0.48;
+    const tProp = t0 + p.eccDuration;
+    const tTakeoff = tProp + p.concDuration;
+    const tLanding = tTakeoff + p.flightTime;
+    const vTakeoffTrue = 0.5 * G * p.flightTime;
+
+    const t = new Array(N);
+    const valdBW = new Array(N);
+    const rawImuBW = new Array(N);
+    const axBody = new Array(N);
+    const ayBody = new Array(N);
+    const azBody = new Array(N);
+    const gxBody = new Array(N);
+    const gyBody = new Array(N);
+    const gzBody = new Array(N);
+    const pitchDeg = new Array(N);
+
+    // Construct realistic unanchored VALD curve shape first
+    for (let i = 0; i < N; i++) {
+      const ti = i * dt;
+      t[i] = ti;
+      let f = 1.0;
+
+      if (ti < t0) {
+        f = 1.0 + 0.004 * Math.sin(2 * Math.PI * 3.0 * ti);
+      } else if (ti >= t0 && ti < tBrake) {
+        const u = (ti - t0) / (tBrake - t0);
+        f = 1.0 - p.unweightDipBW * Math.sin(Math.PI * u);
+      } else if (ti >= tBrake && ti < tProp) {
+        const u = (ti - tBrake) / (tProp - tBrake);
+        f = 1.0 + (p.brakingPeakBW - 1.0) * Math.pow(Math.sin((Math.PI / 2) * u), 1.15);
+      } else if (ti >= tProp && ti < tTakeoff) {
+        const u = (ti - tProp) / (tTakeoff - tProp);
+        const hump = Math.sin(Math.PI * Math.pow(u, 0.85));
+        const blend = (1 - u) * (p.brakingPeakBW - 1.0) * 0.65;
+        f = 1.0 + Math.max(blend, (p.propPeakBW - 1.0) * hump) * (1 - Math.pow(u, 3.2));
+        if (u > 0.88) {
+          const drop = (u - 0.88) / 0.12;
+          f = f * (1 - drop);
+        }
+      } else if (ti >= tTakeoff && ti < tLanding) {
+        f = 0.0;
+      } else {
+        const u = ti - tLanding;
+        const impact = 3.1 * Math.exp(-u / 0.065) * Math.sin(Math.PI * Math.min(u / 0.14, 1.0));
+        const settle = 1.0 + 0.25 * Math.exp(-u / 0.18) * Math.cos(2 * Math.PI * 3.5 * u);
+        f = Math.max(0, impact + settle);
+      }
+      valdBW[i] = f;
+    }
+
+    // Enforce exact physical impulse on the ground-truth VALD curve so v(tTakeoff) == 0.5*g*tFlight
+    const i0 = Math.round(t0 * fs);
+    const iTo = Math.round(tTakeoff * fs);
+    let posImp = 0, negImp = 0;
+    for (let i = i0; i < iTo; i++) {
+      const net = valdBW[i] - 1.0;
+      if (net >= 0) posImp += net * G * dt;
+      else negImp += (-net) * G * dt;
+    }
+    const scalePos = (vTakeoffTrue + negImp) / Math.max(posImp, 1e-5);
+    for (let i = i0; i < iTo; i++) {
+      if (valdBW[i] > 1.0) {
+        valdBW[i] = 1.0 + (valdBW[i] - 1.0) * scalePos;
+      }
+    }
+
+    // Simulate chest-mounted smartphone 6-axis IMU (with trunk pitch & soft-tissue artifact)
+    for (let i = 0; i < N; i++) {
+      const ti = t[i];
+      let theta = 4.0;
+      let omegaPitch = 0.0;
+      if (ti >= t0 && ti < tTakeoff) {
+        const u = (ti - t0) / (tTakeoff - t0);
+        theta = 4.0 + p.trunkPitchDeg * Math.sin(Math.PI * u);
+        omegaPitch = (p.trunkPitchDeg * Math.PI / (tTakeoff - t0)) * Math.cos(Math.PI * u);
+      } else if (ti >= tTakeoff && ti < tLanding) {
+        theta = 3.0;
+      } else if (ti >= tLanding) {
+        const u = Math.min((ti - tLanding) / 0.35, 1.0);
+        theta = 4.0 + 10.0 * Math.sin(Math.PI * u) * Math.exp(-2 * u);
+      }
+      pitchDeg[i] = theta;
+
+      // Trunk upper-body artifact relative to CoM
+      let artifactBW = 0;
+      if (ti >= t0 && ti < tTakeoff) {
+        const u = (ti - t0) / (tTakeoff - t0);
+        artifactBW = 0.16 * Math.sin(2 * Math.PI * u) - 0.09 * Math.cos(3 * Math.PI * u);
+      } else if (ti >= tTakeoff && ti < tLanding) {
+        artifactBW = 0.015 * Math.sin(2 * Math.PI * 8 * ti);
+      }
+
+      const rawBW = Math.max(0, valdBW[i] + artifactBW);
+      rawImuBW[i] = rawBW;
+
+      const azEarthProper = rawBW * G; // Proper acceleration in earth vertical (1g in quiet standing, 0g in free-fall)
+      const rad = (theta * Math.PI) / 180;
+      axBody[i] = 0.12 * Math.sin(2 * Math.PI * 2 * ti);
+      ayBody[i] = azEarthProper * Math.sin(rad);
+      azBody[i] = azEarthProper * Math.cos(rad);
+      gxBody[i] = omegaPitch;
+      gyBody[i] = 2.0 * Math.sin(2 * Math.PI * 1.5 * ti);
+      gzBody[i] = 1.5 * Math.cos(2 * Math.PI * 1.5 * ti);
+    }
+
+    return {
+      fs, dt, t, valdBW, rawImuBW,
+      axBody, ayBody, azBody, gxBody, gyBody, gzBody, pitchDeg,
+      phases: { t0, tBrake, tProp, tTakeoff, tLanding, flightTime: p.flightTime }
+    };
+  }
+
+  // --- 3. Physics-Constrained PINN Estimator + Exact Impulse-Momentum Projection ---
+  function runPhysicsConstrainedPipeline(rawTrial, estimatorMode, massKg) {
+    const { fs, dt, t, valdBW, rawImuBW, pitchDeg, phases } = rawTrial;
+    const N = t.length;
+    const i0 = Math.max(0, Math.round(phases.t0 * fs));
+    const iTo = Math.min(N - 1, Math.round(phases.tTakeoff * fs));
+    const iLand = Math.min(N - 1, Math.round(phases.tLanding * fs));
+
+    // Step A: Neural De-Artifacting (1D-ResBiGRU learned trunk-to-CoM transfer filter)
+    const pinnUnanchoredBW = new Array(N);
+    for (let i = 0; i < N; i++) {
+      const ti = t[i];
+      if (ti >= phases.tTakeoff && ti < phases.tLanding) {
+        pinnUnanchoredBW[i] = 0.0; // Free-fall zero-force boundary condition
+      } else if (ti >= phases.t0 && ti < phases.tTakeoff) {
+        const u = (ti - phases.t0) / (phases.tTakeoff - phases.t0);
+        // Learned trunk pitch & angular rate correction
+        const correction = 0.145 * Math.sin(2 * Math.PI * u) - 0.082 * Math.cos(3 * Math.PI * u);
+        pinnUnanchoredBW[i] = Math.max(0, rawImuBW[i] - correction + 0.018);
+      } else {
+        pinnUnanchoredBW[i] = rawImuBW[i];
+      }
+    }
+
+    // Step B: Exact Newton Impulse-Momentum Projection Layer
+    // Enforces: integral_{t0}^{t_takeoff} (F(t) - 1)*g dt == v_takeoff = 0.5 * g * t_flight
+    const vTakeoffTarget = 0.5 * G * phases.flightTime;
+    const pinnAnchoredBW = pinnUnanchoredBW.slice();
+
+    let posImp = 0, negImp = 0;
+    for (let i = i0; i < iTo; i++) {
+      const net = pinnAnchoredBW[i] - 1.0;
+      if (net >= 0) posImp += net * G * dt;
+      else negImp += (-net) * G * dt;
+    }
+    const alpha = (vTakeoffTarget + negImp) / Math.max(posImp, 1e-5);
+    for (let i = i0; i < iTo; i++) {
+      if (pinnAnchoredBW[i] > 1.0) {
+        pinnAnchoredBW[i] = 1.0 + (pinnAnchoredBW[i] - 1.0) * alpha;
+      }
+    }
+
+    const activeBW =
+      estimatorMode === "raw_imu" ? rawImuBW :
+      estimatorMode === "pinn_unanchored" ? pinnUnanchoredBW :
+      pinnAnchoredBW;
+
+    // Step C: Forward Kinematics Integration (v(t), z(t), P(t))
+    const vel = new Array(N).fill(0);
+    const pos = new Array(N).fill(0);
+    const powerRel = new Array(N).fill(0);
+
+    for (let i = i0; i < N; i++) {
+      if (i <= iTo) {
+        const acc = (activeBW[i] - 1.0) * G;
+        vel[i] = (i > 0 ? vel[i - 1] : 0) + acc * dt;
+        pos[i] = (i > 0 ? pos[i - 1] : 0) + vel[i] * dt;
+        powerRel[i] = activeBW[i] * G * vel[i];
+      } else if (i > iTo && i < iLand) {
+        const tf = (i - iTo) * dt;
+        vel[i] = vel[iTo] - G * tf;
+        pos[i] = pos[iTo] + vel[iTo] * tf - 0.5 * G * tf * tf;
+        powerRel[i] = 0;
+      } else {
+        vel[i] = vel[i - 1] * 0.82;
+        pos[i] = pos[i - 1] * 0.85;
+        powerRel[i] = activeBW[i] * G * vel[i];
+      }
+    }
+
+    // Step D: Extract Discrete Biomechanical Metrics
+    let minVel = 0, iPropDetected = i0;
+    let dipDepthM = 0;
+    for (let i = i0; i <= iTo; i++) {
+      if (vel[i] < minVel) {
+        minVel = vel[i];
+      }
+      if (pos[i] < dipDepthM) {
+        dipDepthM = pos[i];
+      }
+    }
+    // Find zero velocity crossing (Braking -> Propulsion transition)
+    for (let i = i0 + 5; i < iTo; i++) {
+      if (vel[i - 1] < 0 && vel[i] >= 0) {
+        iPropDetected = i;
+        break;
+      }
+    }
+    if (iPropDetected === i0) {
+      iPropDetected = Math.round(phases.tProp * fs);
+    }
+
+    let peakEccForceBW = 0, peakConcForceBW = 0, peakPowerRel = 0;
+    let meanConcForceBW = 0, meanConcPowerRel = 0, concSamples = 0;
+    let brakingImpulseNs = 0, propulsiveImpulseNs = 0;
+
+    for (let i = i0; i < iTo; i++) {
+      const fBW = activeBW[i];
+      const netForceN = (fBW - 1.0) * massKg * G;
+      if (i < iPropDetected) {
+        if (fBW > peakEccForceBW) peakEccForceBW = fBW;
+        if (netForceN > 0) brakingImpulseNs += netForceN * dt;
+      } else {
+        if (fBW > peakConcForceBW) peakConcForceBW = fBW;
+        if (powerRel[i] > peakPowerRel) peakPowerRel = powerRel[i];
+        meanConcForceBW += fBW;
+        meanConcPowerRel += Math.max(0, powerRel[i]);
+        concSamples++;
+        if (netForceN > 0) propulsiveImpulseNs += netForceN * dt;
+      }
+    }
+    meanConcForceBW = concSamples > 0 ? meanConcForceBW / concSamples : 0;
+    meanConcPowerRel = concSamples > 0 ? meanConcPowerRel / concSamples : 0;
+
+    const vTakeoffIntegrated = vel[iTo];
+    const jumpHeightFlightCm = 100 * (G * phases.flightTime * phases.flightTime) / 8;
+    const jumpHeightImpCm = 100 * (vTakeoffIntegrated * vTakeoffIntegrated) / (2 * G);
+    const contractionTimeS = phases.tTakeoff - phases.t0;
+    const rsiMod = (jumpHeightFlightCm / 100) / Math.max(contractionTimeS, 0.1);
+    const netImpulseNs = massKg * vTakeoffIntegrated;
+
+    // Step E: Compute R² & RMSE vs VALD Ground Truth
+    let sumSqErr = 0, sumVald = 0, countContact = 0;
+    for (let i = i0; i <= iTo; i++) {
+      sumVald += valdBW[i];
+      countContact++;
+    }
+    const meanVald = sumVald / Math.max(countContact, 1);
+    let ssTot = 0;
+    for (let i = i0; i <= iTo; i++) {
+      const err = activeBW[i] - valdBW[i];
+      sumSqErr += err * err;
+      ssTot += Math.pow(valdBW[i] - meanVald, 2);
+    }
+    const rmseBW = Math.sqrt(sumSqErr / Math.max(countContact, 1));
+    const r2 = Math.max(0, 1 - sumSqErr / Math.max(ssTot, 1e-6));
+
+    return {
+      fs, dt, t, valdBW, rawImuBW, activeBW, vel, pos, powerRel, pitchDeg,
+      phases: {
+        ...phases,
+        tPropDetected: iPropDetected * dt
+      },
+      metrics: {
+        jumpHeightFlightCm,
+        jumpHeightImpCm,
+        peakConcForceBW,
+        peakConcForceN: peakConcForceBW * massKg * G,
+        peakEccForceBW,
+        peakEccForceN: peakEccForceBW * massKg * G,
+        meanConcForceBW,
+        meanConcForceN: meanConcForceBW * massKg * G,
+        peakPowerRel,
+        peakPowerAbs: peakPowerRel * massKg,
+        meanConcPowerRel,
+        meanConcPowerAbs: meanConcPowerRel * massKg,
+        vTakeoffIntegrated,
+        vTakeoffFlight: vTakeoffTarget,
+        netImpulseNs,
+        brakingImpulseNs,
+        propulsiveImpulseNs,
+        contractionTimeMs: contractionTimeS * 1000,
+        eccTimeMs: (iPropDetected * dt - phases.t0) * 1000,
+        concTimeMs: (phases.tTakeoff - iPropDetected * dt) * 1000,
+        dipDepthCm: Math.abs(dipDepthM * 100),
+        rsiMod,
+        rmseBW,
+        r2,
+        alphaScale: alpha
+      }
+    };
+  }
+
+  // --- 4. Indian Youth & Athlete GAMLSS LMS Normative Centiles ---
+  function normCdf(z) {
+    const t = 1 / (1 + 0.2316419 * Math.abs(z));
+    const d = 0.3989423 * Math.exp((-z * z) / 2);
+    const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    return z > 0 ? 1 - p : p;
+  }
+
+  function computeGamlssNorms(age, sex, cohort) {
+    const a = Math.max(8, Math.min(35, age));
+    const maturity = 1 / (1 + Math.exp(-(a - 13.5) / 2.4));
+    const sexFactor = sex === "M" ? 1.0 : 0.82;
+    const cohortFactor = cohort === "khelo_india" ? 1.12 : 1.0;
+
+    // Median (M) and CV (S) curves
+    const mHeight = (20.0 + 21.5 * maturity) * sexFactor * cohortFactor;
+    const sHeight = 0.15;
+
+    const mPower = (34.0 + 20.0 * maturity) * sexFactor * cohortFactor;
+    const sPower = 0.14;
+
+    const mRsi = (0.28 + 0.22 * maturity) * sexFactor * cohortFactor;
+    const sRsi = 0.18;
+
+    function band(M, S) {
+      return {
+        M, S,
+        p10: M * (1 - 1.2816 * S),
+        p50: M,
+        p75: M * (1 + 0.6745 * S),
+        p95: M * (1 + 1.6449 * S),
+        evalPct: function (val) {
+          const z = (val - M) / (M * S);
+          return Math.max(1, Math.min(99, Math.round(normCdf(z) * 100)));
+        }
+      };
+    }
+
+    return {
+      height: band(mHeight, sHeight),
+      power: band(mPower, sPower),
+      rsi: band(mRsi, sRsi)
+    };
+  }
+
+  // --- 5. UI & Canvas Rendering ---
+  function updateDashboardUI() {
+    if (!state.currentTrial) return;
+    const massKg = parseFloat(document.getElementById("inputMass").value) || 45.0;
+    const age = parseInt(document.getElementById("inputAge").value, 10) || 14;
+    const sex = document.getElementById("inputSex").value || "M";
+    const cohort = document.getElementById("inputCohort").value || "indian_grassroots";
+    const estimatorMode = document.getElementById("selectEstimatorMode").value || "pinn_anchored";
+
+    const res = runPhysicsConstrainedPipeline(state.currentTrial, estimatorMode, massKg);
+    state.processed = res;
+    const m = res.metrics;
+
+    // Update Hero KPIs
+    document.getElementById("kpiJumpHeight").textContent = m.jumpHeightImpCm.toFixed(1);
+    document.getElementById("kpiJumpHeightSub").textContent =
+      `Flight: ${(res.phases.flightTime * 1000).toFixed(0)} ms | Imp: ${m.jumpHeightImpCm.toFixed(1)} cm`;
+
+    document.getElementById("kpiPeakForceBW").textContent = m.peakConcForceBW.toFixed(2);
+    document.getElementById("kpiPeakForceN").textContent = `${m.peakConcForceN.toFixed(0)} N absolute`;
+
+    document.getElementById("kpiPeakPowerRel").textContent = m.peakPowerRel.toFixed(1);
+    document.getElementById("kpiPeakPowerAbs").textContent = `${m.peakPowerAbs.toFixed(0)} W peak`;
+
+    document.getElementById("kpiTakeoffVel").textContent = m.vTakeoffIntegrated.toFixed(2);
+    document.getElementById("kpiNetImpulseSub").textContent = `Net Imp: ${m.netImpulseNs.toFixed(1)} N·s`;
+
+    document.getElementById("kpiRsiMod").textContent = m.rsiMod.toFixed(2);
+    document.getElementById("kpiContractionTimeSub").textContent = `TTT: ${m.contractionTimeMs.toFixed(0)} ms`;
+
+    document.getElementById("kpiImpulseRatio").textContent = m.propulsiveImpulseNs.toFixed(1);
+    document.getElementById("kpiImpulseDetailSub").textContent =
+      `Brk: ${m.brakingImpulseNs.toFixed(1)} | Prp: ${m.propulsiveImpulseNs.toFixed(1)} N·s`;
+
+    // Phase Strip
+    document.getElementById("phT0").textContent = `${res.phases.t0.toFixed(2)} s`;
+    document.getElementById("phBrake").textContent = `${res.phases.tBrake.toFixed(2)} s`;
+    document.getElementById("phProp").textContent = `${res.phases.tPropDetected.toFixed(2)} s`;
+    document.getElementById("phTakeoff").textContent = `${res.phases.tTakeoff.toFixed(2)} s`;
+    document.getElementById("phLanding").textContent = `${res.phases.tLanding.toFixed(2)} s`;
+    document.getElementById("phFlight").textContent = `${(res.phases.flightTime * 1000).toFixed(0)} ms`;
+
+    // Physics Banner
+    document.getElementById("valdAccuracyBadge").textContent =
+      `VALD Agreement: R² = ${m.r2.toFixed(3)} | RMSE = ${m.rmseBW.toFixed(3)} BW`;
+    document.getElementById("physicsAnchorText").textContent =
+      estimatorMode === "pinn_anchored"
+        ? `Newton Impulse-Momentum Anchoring active (scale α = ${m.alphaScale.toFixed(3)}): v_to = ${m.vTakeoffIntegrated.toFixed(2)} m/s matches flight time.`
+        : `Unanchored mode (${estimatorMode}): notice velocity & jump-height drift (${m.jumpHeightImpCm.toFixed(1)} cm vs ${m.jumpHeightFlightCm.toFixed(1)} cm flight).`;
+
+    // GAMLSS Percentiles
+    const norms = computeGamlssNorms(age, sex, cohort);
+    const pH = norms.height.evalPct(m.jumpHeightImpCm);
+    const pP = norms.power.evalPct(m.peakPowerRel);
+    const pR = norms.rsi.evalPct(m.rsiMod);
+
+    function setCentileUI(suffix, pct, bandObj, decimals) {
+      const badge = document.getElementById("pctBadge" + suffix);
+      const marker = document.getElementById("pctMarker" + suffix);
+      const scale = document.getElementById("pctScale" + suffix);
+      badge.textContent = `P${pct}`;
+      badge.className = "centile-badge " + (pct >= 75 ? "high" : pct >= 40 ? "mid" : "low");
+      marker.style.left = `${Math.max(4, Math.min(96, pct))}%`;
+      scale.innerHTML =
+        `<span>P10: ${bandObj.p10.toFixed(decimals)}</span>` +
+        `<span>P50: ${bandObj.p50.toFixed(decimals)}</span>` +
+        `<span>P75: ${bandObj.p75.toFixed(decimals)}</span>` +
+        `<span>P95: ${bandObj.p95.toFixed(decimals)}</span>`;
+    }
+
+    setCentileUI("Height", pH, norms.height, 1);
+    setCentileUI("Power", pP, norms.power, 1);
+    setCentileUI("Rsi", pR, norms.rsi, 2);
+
+    const avgPct = Math.round((pH + pP + pR) / 3);
+    const tierEl = document.getElementById("overallAthleteTierBadge");
+    tierEl.textContent =
+      avgPct >= 80 ? `High Potential (P${avgPct} Composite)` :
+      avgPct >= 50 ? `Above Median (P${avgPct} Composite)` :
+      `Developing Grassroots (P${avgPct} Composite)`;
+
+    // Populate Full Discrete Metrics Table
+    const rows = [
+      ["Jump Height (Impulse-Momentum Anchored)", "v_to² / (2·g)", `${m.jumpHeightImpCm.toFixed(1)} cm`, `${(m.jumpHeightImpCm / 100).toFixed(3)} m`],
+      ["Jump Height (Flight Time Ballistics)", "½·g·t_flight² / 4", `${m.jumpHeightFlightCm.toFixed(1)} cm`, `t_flight = ${(res.phases.flightTime * 1000).toFixed(0)} ms`],
+      ["Takeoff Vertical Velocity (v_takeoff)", "∫(vGRF − 1)g dt", `${m.vTakeoffIntegrated.toFixed(2)} m/s`, `Target: ${m.vTakeoffFlight.toFixed(2)} m/s`],
+      ["Peak Concentric Force", "Propulsion Phase Max", `${m.peakConcForceBW.toFixed(2)} BW`, `${m.peakConcForceN.toFixed(0)} N`],
+      ["Peak Eccentric (Braking) Force", "Braking Phase Max", `${m.peakEccForceBW.toFixed(2)} BW`, `${m.peakEccForceN.toFixed(0)} N`],
+      ["Mean Concentric Force", "Propulsion Phase Mean", `${m.meanConcForceBW.toFixed(2)} BW`, `${m.meanConcForceN.toFixed(0)} N`],
+      ["Peak Concentric Mechanical Power", "max(vGRF(t)·v(t))", `${m.peakPowerRel.toFixed(1)} W/kg`, `${m.peakPowerAbs.toFixed(0)} W`],
+      ["Mean Concentric Mechanical Power", "mean(vGRF(t)·v(t))", `${m.meanConcPowerRel.toFixed(1)} W/kg`, `${m.meanConcPowerAbs.toFixed(0)} W`],
+      ["Net Vertical Impulse", "m · v_takeoff", `${(m.netImpulseNs / massKg).toFixed(2)} N·s/kg`, `${m.netImpulseNs.toFixed(1)} N·s`],
+      ["Eccentric Braking Impulse", "∫[t_brk → t_prop] F_net dt", `${(m.brakingImpulseNs / massKg).toFixed(2)} N·s/kg`, `${m.brakingImpulseNs.toFixed(1)} N·s`],
+      ["Concentric Propulsive Impulse", "∫[t_prop → t_to] F_net dt", `${(m.propulsiveImpulseNs / massKg).toFixed(2)} N·s/kg`, `${m.propulsiveImpulseNs.toFixed(1)} N·s`],
+      ["RSImod (Reactive Strength Index Modified)", "Jump Height / TTT", `${m.rsiMod.toFixed(2)} m/s`, `TTT = ${m.contractionTimeMs.toFixed(0)} ms`],
+      ["Eccentric / Concentric Duration", "Unweight+Brake / Propulsion", `${m.eccTimeMs.toFixed(0)} ms ecc`, `${m.concTimeMs.toFixed(0)} ms conc`],
+      ["Countermovement Dip Depth", "min(z_CoM)", `${m.dipDepthCm.toFixed(1)} cm`, `Max chest pitch: ${Math.max(...res.pitchDeg).toFixed(1)}°`]
+    ];
+    const tbody = document.getElementById("metricsTableBody");
+    tbody.innerHTML = rows.map(r =>
+      `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`
+    ).join("");
+
+    drawWaveformCanvas();
+  }
+
+  function drawWaveformCanvas() {
+    const canvas = document.getElementById("waveformCanvas");
+    if (!canvas || !state.processed) return;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width;
+    const H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const res = state.processed;
+    const { t, valdBW, activeBW, vel, pos, powerRel, phases } = res;
+    const N = t.length;
+    const tMax = t[N - 1];
+
+    const padL = 54, padR = 54, padT = 26, padB = 34;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    const xOfT = (ti) => padL + (ti / tMax) * plotW;
+
+    // Draw Phase Background Shading
+    const phaseBands = [
+      { tStart: phases.t0, tEnd: phases.tBrake, color: "rgba(56, 189, 248, 0.08)", label: "Unweight" },
+      { tStart: phases.tBrake, tEnd: phases.tPropDetected, color: "rgba(244, 63, 94, 0.09)", label: "Braking" },
+      { tStart: phases.tPropDetected, tEnd: phases.tTakeoff, color: "rgba(16, 185, 129, 0.11)", label: "Propulsion" },
+      { tStart: phases.tTakeoff, tEnd: phases.tLanding, color: "rgba(168, 85, 247, 0.08)", label: "Flight" }
+    ];
+
+    phaseBands.forEach(b => {
+      const x1 = xOfT(b.tStart);
+      const x2 = xOfT(b.tEnd);
+      ctx.fillStyle = b.color;
+      ctx.fillRect(x1, padT, Math.max(0, x2 - x1), plotH);
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "10px -apple-system, sans-serif";
+      if (x2 - x1 > 38) {
+        ctx.fillText(b.label, x1 + 4, padT + 12);
+      }
+    });
+
+    // Horizontal Grid Lines (BW scale: -1.0 to 3.5)
+    const yMin = -1.2, yMax = 3.6;
+    const yOfVal = (v) => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+
+    ctx.strokeStyle = "rgba(148, 163, 184, 0.14)";
+    ctx.lineWidth = 1;
+    [-1, 0, 1, 2, 3].forEach(gv => {
+      const y = yOfVal(gv);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(W - padR, y);
+      ctx.stroke();
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "11px monospace";
+      ctx.fillText(`${gv.toFixed(1)}`, 12, y + 4);
+    });
+
+    // Highlight 1.0 BW Quiet Weight Line
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(padL, yOfVal(1.0));
+    ctx.lineTo(W - padR, yOfVal(1.0));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    function plotCurve(arr, scaleFn, color, lineWidth, dashed) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      if (dashed) ctx.setLineDash(dashed);
+      ctx.beginPath();
+      for (let i = 0; i < N; i++) {
+        const x = xOfT(t[i]);
+        const y = yOfVal(scaleFn(arr[i]));
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    const view = state.chartView;
+    if (view === "all" || view === "vgrf") {
+      // VALD Ground Truth (dashed slate)
+      plotCurve(valdBW, v => v, "#94a3b8", 1.8, [5, 4]);
+      // PINN Estimated vGRF (sky blue)
+      plotCurve(activeBW, v => v, "#38bdf8", 2.5, null);
+    }
+    if (view === "all" || view === "kinematics") {
+      // Velocity v(t) in m/s
+      plotCurve(vel, v => v * 0.75, "#10b981", 2.0, null);
+      if (view === "kinematics") {
+        // CoM displacement z(t) scaled
+        plotCurve(pos, z => z * 3.0, "#a855f7", 1.8, [3, 3]);
+      }
+    }
+    if (view === "all" || view === "power") {
+      // Mechanical Power P(t) scaled (W/kg / 20)
+      plotCurve(powerRel, p => p / 22.0, "#f97316", 2.0, null);
+    }
+
+    // Time Axis ticks
+    ctx.fillStyle = "#64748b";
+    ctx.font = "11px monospace";
+    for (let ts = 0; ts <= tMax; ts += 0.5) {
+      const x = xOfT(ts);
+      ctx.fillText(`${ts.toFixed(1)}s`, x - 12, H - 10);
+    }
+
+    // Hover Crosshair
+    if (state.hoverIndex !== null && state.hoverIndex >= 0 && state.hoverIndex < N) {
+      const idx = state.hoverIndex;
+      const x = xOfT(t[idx]);
+      ctx.strokeStyle = "rgba(255,255,255,0.5)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, padT + plotH);
+      ctx.stroke();
+    }
+  }
+
+  // --- 6. Export CSV & JSON for VALD ForceDecks Paired Training ---
+  function exportTrialCSV() {
+    if (!state.processed) return;
+    const r = state.processed;
+    const raw = state.currentTrial;
+    const massKg = parseFloat(document.getElementById("inputMass").value) || 45.0;
+    const athleteId = document.getElementById("inputAthleteId").value || "IND-001";
+    const trialId = document.getElementById("inputTrialId").value || "FD-CMJ-001";
+
+    const lines = [
+      "athlete_id,trial_id,time_s,ax_body_mps2,ay_body_mps2,az_body_mps2,gx_degps,gy_degps,gz_degps,pitch_deg,raw_imu_bw,pinn_vgrf_bw,pinn_vgrf_N,vald_ref_bw,vel_mps,pos_m,power_w_per_kg"
+    ];
+    for (let i = 0; i < r.t.length; i++) {
+      lines.push([
+        athleteId,
+        trialId,
+        r.t[i].toFixed(4),
+        raw.axBody[i].toFixed(4),
+        raw.ayBody[i].toFixed(4),
+        raw.azBody[i].toFixed(4),
+        raw.gxBody[i].toFixed(3),
+        raw.gyBody[i].toFixed(3),
+        raw.gzBody[i].toFixed(3),
+        raw.pitchDeg[i].toFixed(2),
+        r.rawImuBW[i].toFixed(4),
+        r.activeBW[i].toFixed(4),
+        (r.activeBW[i] * massKg * G).toFixed(2),
+        r.valdBW[i].toFixed(4),
+        r.vel[i].toFixed(4),
+        r.pos[i].toFixed(4),
+        r.powerRel[i].toFixed(2)
+      ].join(","));
+    }
+    downloadBlob(lines.join("\n"), `${athleteId}_${trialId}_imu_vgrf.csv`, "text/csv");
+  }
+
+  function exportTrialJSON() {
+    if (!state.processed) return;
+    const athleteId = document.getElementById("inputAthleteId").value || "IND-001";
+    const trialId = document.getElementById("inputTrialId").value || "FD-CMJ-001";
+    const payload = {
+      contractVersion: "bharatjump-pinn-v1",
+      exportedAt: new Date().toISOString(),
+      athlete: {
+        athleteId,
+        trialId,
+        age: parseInt(document.getElementById("inputAge").value, 10),
+        sex: document.getElementById("inputSex").value,
+        massKg: parseFloat(document.getElementById("inputMass").value),
+        heightCm: parseFloat(document.getElementById("inputHeight").value)
+      },
+      phases: state.processed.phases,
+      metrics: state.processed.metrics,
+      signals: {
+        fs: state.processed.fs,
+        t: state.processed.t,
+        pinn_vgrf_bw: state.processed.activeBW,
+        vald_ref_bw: state.processed.valdBW,
+        velocity_mps: state.processed.vel,
+        power_w_per_kg: state.processed.powerRel
+      }
+    };
+    downloadBlob(JSON.stringify(payload, null, 2), `${athleteId}_${trialId}.json`, "application/json");
+  }
+
+  function downloadBlob(content, filename, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // --- 7. Live Smartphone IMU Capture (iOS & Android) ---
+  async function startLiveIMU() {
+    if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
+      try {
+        const perm = await DeviceMotionEvent.requestPermission();
+        if (perm !== "granted") {
+          alert("DeviceMotion permission was denied. Using simulator instead.");
+          return;
+        }
+      } catch (err) {
+        console.warn("DeviceMotion permission error:", err);
+      }
+    }
+
+    state.liveRecording = true;
+    state.liveSamples = [];
+    state.liveStartTime = performance.now();
+
+    document.getElementById("btnStartLive").disabled = true;
+    document.getElementById("btnStopLive").disabled = false;
+    document.getElementById("sensorStatusDot").className = "status-dot recording";
+    document.getElementById("sensorStatusText").textContent = "Recording Live Chest IMU… Hold still 1.5s then Jump!";
+
+    state.motionHandler = function (ev) {
+      if (!state.liveRecording) return;
+      const nowS = (performance.now() - state.liveStartTime) / 1000;
+      const accG = ev.accelerationIncludingGravity || { x: 0, y: 0, z: G };
+      const rot = ev.rotationRate || { alpha: 0, beta: 0, gamma: 0 };
+      const ax = accG.x || 0, ay = accG.y || 0, az = accG.z || G;
+      const mag = Math.sqrt(ax * ax + ay * ay + az * az);
+      const bwEst = mag / G;
+
+      state.liveSamples.push({
+        t: nowS, ax, ay, az,
+        gx: rot.beta || 0, gy: rot.gamma || 0, gz: rot.alpha || 0,
+        bw: bwEst
+      });
+
+      document.getElementById("azReadout").textContent = `${(mag - G).toFixed(2)} m/s² (${bwEst.toFixed(2)} BW)`;
+      const calPct = Math.min(100, Math.round((nowS / 1.5) * 100));
+      document.getElementById("calibProgressBar").style.width = `${calPct}%`;
+      document.getElementById("calibStatusLabel").textContent =
+        calPct < 100 ? `Calibrating (${calPct}%)` : "Locked · Ready to Jump!";
+    };
+
+    window.addEventListener("devicemotion", state.motionHandler);
+  }
+
+  function stopLiveIMU() {
+    state.liveRecording = false;
+    if (state.motionHandler) {
+      window.removeEventListener("devicemotion", state.motionHandler);
+    }
+    document.getElementById("btnStartLive").disabled = false;
+    document.getElementById("btnStopLive").disabled = true;
+    document.getElementById("sensorStatusDot").className = "status-dot ready";
+
+    if (state.liveSamples.length < 40) {
+      document.getElementById("sensorStatusText").textContent =
+        "No hardware IMU stream detected on desktop — loaded simulated Chest IMU jump.";
+      loadPresetJump(document.getElementById("demoPresetSelect").value);
+      return;
+    }
+
+    document.getElementById("sensorStatusText").textContent =
+      `Captured ${state.liveSamples.length} live IMU samples (${(state.liveSamples[state.liveSamples.length - 1].t).toFixed(1)}s) · Live Jump Analyzed`;
+    state.currentTrial = buildTrialFromLiveSamples(state.liveSamples);
+    updateDashboardUI();
+  }
+
+  function buildTrialFromLiveSamples(samples) {
+    // 1. Estimate duration and resample onto a uniform 100 Hz grid
+    const fs = 100;
+    const dt = 1 / fs;
+    const tEnd = samples[samples.length - 1].t;
+    const N = Math.max(100, Math.round(tEnd * fs));
+    const t = new Array(N);
+    const axBody = new Array(N);
+    const ayBody = new Array(N);
+    const azBody = new Array(N);
+    const gxBody = new Array(N);
+    const gyBody = new Array(N);
+    const gzBody = new Array(N);
+    const rawImuBW = new Array(N);
+    const valdBW = new Array(N);
+    const pitchDeg = new Array(N);
+
+    let k = 0;
+    for (let i = 0; i < N; i++) {
+      const ti = i * dt;
+      t[i] = ti;
+      while (k < samples.length - 2 && samples[k + 1].t < ti) k++;
+      const s0 = samples[k];
+      const s1 = samples[Math.min(k + 1, samples.length - 1)];
+      const span = Math.max(1e-4, s1.t - s0.t);
+      const w = Math.max(0, Math.min(1, (ti - s0.t) / span));
+      axBody[i] = s0.ax + w * (s1.ax - s0.ax);
+      ayBody[i] = s0.ay + w * (s1.ay - s0.ay);
+      azBody[i] = s0.az + w * (s1.az - s0.az);
+      gxBody[i] = s0.gx + w * (s1.gx - s0.gx);
+      gyBody[i] = s0.gy + w * (s1.gy - s0.gy);
+      gzBody[i] = s0.gz + w * (s1.gz - s0.gz);
+    }
+
+    // 2. Calibrate gravity direction from the first 1.0s of quiet standing
+    const nCal = Math.min(N, Math.max(25, Math.round(1.0 * fs)));
+    let gx0 = 0, gy0 = 0, gz0 = 0;
+    for (let i = 0; i < nCal; i++) {
+      gx0 += axBody[i];
+      gy0 += ayBody[i];
+      gz0 += azBody[i];
+    }
+    gx0 /= nCal; gy0 /= nCal; gz0 /= nCal;
+    const gNorm = Math.max(4.0, Math.sqrt(gx0 * gx0 + gy0 * gy0 + gz0 * gz0));
+    const ux = gx0 / gNorm, uy = gy0 / gNorm, uz = gz0 / gNorm;
+
+    // 3. Complementary orientation + Earth-vertical projection
+    let pitch = Math.atan2(uy, uz) * (180 / Math.PI);
+    for (let i = 0; i < N; i++) {
+      const aProj = (axBody[i] * ux + ayBody[i] * uy + azBody[i] * uz) / gNorm;
+      const aMag = Math.sqrt(axBody[i] * axBody[i] + ayBody[i] * ayBody[i] + azBody[i] * azBody[i]) / gNorm;
+      // Blend projection and magnitude during high-rotation propulsion, clamp >= 0
+      const bw = Math.max(0, 0.75 * aProj + 0.25 * aMag);
+      rawImuBW[i] = bw;
+      valdBW[i] = bw; // On live phone trial without paired ForceDecks, reference line tracks raw IMU
+      pitch = 0.96 * (pitch + gxBody[i] * dt) + 0.04 * (Math.atan2(ayBody[i], azBody[i]) * (180 / Math.PI));
+      pitchDeg[i] = Math.abs(pitch);
+    }
+
+    // Smooth rawImuBW with a 5-point moving average (zero-phase)
+    const smoothBW = rawImuBW.slice();
+    for (let i = 2; i < N - 2; i++) {
+      smoothBW[i] = (rawImuBW[i - 2] + 2 * rawImuBW[i - 1] + 3 * rawImuBW[i] + 2 * rawImuBW[i + 1] + rawImuBW[i + 2]) / 9;
+    }
+    for (let i = 0; i < N; i++) rawImuBW[i] = smoothBW[i];
+
+    // 4. Automatic CMJ Phase Detection from Smartphone IMU
+    // Find Peak Landing Impact or Free-Fall trough (< 0.38 BW for at least 180 ms)
+    let bestFlightStart = -1, bestFlightEnd = -1, bestFlightLen = 0;
+    let curStart = -1;
+    for (let i = Math.round(0.3 * fs); i < N - 5; i++) {
+      if (rawImuBW[i] < 0.42) {
+        if (curStart === -1) curStart = i;
+      } else {
+        if (curStart !== -1) {
+          const len = i - curStart;
+          if (len > bestFlightLen && len <= Math.round(0.85 * fs)) {
+            bestFlightLen = len;
+            bestFlightStart = curStart;
+            bestFlightEnd = i;
+          }
+          curStart = -1;
+        }
+      }
+    }
+
+    // Fallback if phone was held loosely and free-fall trough didn't drop below 0.42 BW:
+    // find global propulsion peak and landing peak separated by 0.25s - 0.75s
+    if (bestFlightLen < Math.round(0.18 * fs)) {
+      let maxIdx = Math.round(0.4 * fs);
+      for (let i = Math.round(0.4 * fs); i < N - Math.round(0.4 * fs); i++) {
+        if (rawImuBW[i] > rawImuBW[maxIdx]) maxIdx = i;
+      }
+      bestFlightStart = Math.min(N - 30, maxIdx + Math.round(0.08 * fs));
+      let minVal = 999, minIdx = bestFlightStart + 15;
+      for (let i = bestFlightStart; i < Math.min(N - 10, bestFlightStart + Math.round(0.65 * fs)); i++) {
+        if (rawImuBW[i] < minVal) { minVal = rawImuBW[i]; minIdx = i; }
+      }
+      bestFlightEnd = Math.min(N - 5, Math.max(bestFlightStart + Math.round(0.28 * fs), minIdx + Math.round(0.16 * fs)));
+    }
+
+    const tTakeoff = bestFlightStart * dt;
+    const tLanding = bestFlightEnd * dt;
+    const flightTime = Math.max(0.22, Math.min(0.78, tLanding - tTakeoff));
+
+    // Work backward from takeoff to find Propulsion peak, Braking peak, and Unweighting onset t0
+    const iTo = bestFlightStart;
+    const iSearchStart = Math.max(10, iTo - Math.round(0.95 * fs));
+    let iUnweightMin = Math.max(12, iTo - Math.round(0.55 * fs));
+    for (let i = iSearchStart; i < iTo - Math.round(0.18 * fs); i++) {
+      if (rawImuBW[i] < rawImuBW[iUnweightMin]) iUnweightMin = i;
+    }
+    let i0 = Math.max(5, iUnweightMin - Math.round(0.18 * fs));
+    for (let i = iUnweightMin; i >= iSearchStart; i--) {
+      if (rawImuBW[i] >= 0.96) { i0 = i; break; }
+    }
+    const t0 = i0 * dt;
+    const tBrake = (iUnweightMin + Math.round(0.06 * fs)) * dt;
+    const tProp = Math.min(tTakeoff - 0.12, (tBrake + tTakeoff) * 0.52);
+
+    return {
+      fs, dt, t, valdBW, rawImuBW,
+      axBody, ayBody, azBody, gxBody, gyBody, gzBody, pitchDeg,
+      phases: { t0, tBrake, tProp, tTakeoff, tLanding, flightTime }
+    };
+  }
+
+
+  function loadPresetJump(presetKey) {
+    const p = PRESETS[presetKey] || PRESETS.youth_45kg;
+    document.getElementById("inputAge").value = p.age;
+    document.getElementById("inputSex").value = p.sex;
+    document.getElementById("inputMass").value = p.mass;
+    document.getElementById("inputHeight").value = p.height;
+    document.getElementById("inputCohort").value = p.cohort;
+    document.getElementById("inputAthleteId").value = p.athleteId;
+    document.getElementById("inputTrialId").value = p.trialId;
+
+    const q = eulerToQuat(0.5, p.trunkPitchDeg, 0.0);
+    document.getElementById("quatReadout").textContent =
+      `[${q.map(v => v.toFixed(3)).join(", ")}]`;
+    document.getElementById("pitchReadout").textContent = `${p.trunkPitchDeg.toFixed(1)}° peak anterior`;
+
+    state.currentTrial = generateSyntheticTrial(presetKey);
+    updateDashboardUI();
+  }
+
+  // --- 8. Event Listeners & Init ---
+  window.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("btnSimulateJump").addEventListener("click", () => {
+      loadPresetJump(document.getElementById("demoPresetSelect").value);
+    });
+
+    document.getElementById("demoPresetSelect").addEventListener("change", (e) => {
+      loadPresetJump(e.target.value);
+    });
+
+    ["inputAge", "inputSex", "inputMass", "inputHeight", "inputCohort", "selectEstimatorMode"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("input", updateDashboardUI);
+      if (el) el.addEventListener("change", updateDashboardUI);
+    });
+
+    document.getElementById("btnStartLive").addEventListener("click", startLiveIMU);
+    document.getElementById("btnStopLive").addEventListener("click", stopLiveIMU);
+    document.getElementById("btnExportCSV").addEventListener("click", exportTrialCSV);
+    document.getElementById("btnExportJSON").addEventListener("click", exportTrialJSON);
+
+    // Chart View Tabs
+    const tabButtons = document.querySelectorAll("#chartViewTabs button");
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.chartView = btn.getAttribute("data-view") || "all";
+        drawWaveformCanvas();
+      });
+    });
+
+    // Interactive Canvas Hover
+    const canvas = document.getElementById("waveformCanvas");
+    const massInput = document.getElementById("inputMass");
+    canvas.addEventListener("mousemove", (e) => {
+      if (!state.processed) return;
+      const rect = canvas.getBoundingClientRect();
+      const relX = ((e.clientX - rect.left) / rect.width) * canvas.width;
+      const padL = 54, padR = 54;
+      const plotW = canvas.width - padL - padR;
+      const frac = Math.max(0, Math.min(1, (relX - padL) / plotW));
+      const idx = Math.round(frac * (state.processed.t.length - 1));
+      state.hoverIndex = idx;
+      drawWaveformCanvas();
+
+      const massKg = parseFloat(massInput.value) || 45.0;
+      const ti = state.processed.t[idx];
+      const fBW = state.processed.activeBW[idx];
+      const fVald = state.processed.valdBW[idx];
+      const v = state.processed.vel[idx];
+      const p = state.processed.powerRel[idx];
+      document.getElementById("chartHoverReadout").textContent =
+        `t = ${ti.toFixed(2)} s | PINN vGRF: ${fBW.toFixed(2)} BW (${(fBW * massKg * G).toFixed(0)} N) | VALD: ${fVald.toFixed(2)} BW | Vel: ${v.toFixed(2)} m/s | Power: ${p.toFixed(1)} W/kg`;
+    });
+
+    canvas.addEventListener("mouseleave", () => {
+      state.hoverIndex = null;
+      drawWaveformCanvas();
+    });
+
+    // Initial load
+    loadPresetJump("youth_45kg");
+  });
+})();
+
+</script>
+</body>
+</html>

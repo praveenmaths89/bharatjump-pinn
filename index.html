@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>BharatJump PINN — Smartphone CMJ &amp; vGRF Force Lab</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="stylesheet" href="./styles.css" />
+  <!-- Optional ONNX Runtime Web for custom .onnx models (graceful fallback if offline) -->
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.0/dist/ort.min.js" defer></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-group">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            BharatJump PINN
+            <span class="badge-pill">100% Client-Side PWA</span>
+            <span class="badge-pill emerald">Impulse-Anchored vGRF</span>
+            <span class="badge-pill amber">VALD ForceDecks Ready</span>
+          </div>
+          <div class="brand-subtitle">
+            Grassroots Smartphone Countermovement Jump (CMJ) &amp; Physics-Informed vGRF Estimation Platform
+          </div>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="status-indicator" id="sensorStatusBadge">
+          <span class="status-dot ready" id="sensorStatusDot"></span>
+          <span id="sensorStatusText">Ready · Demo Loaded (100 Hz)</span>
+        </div>
+        <div class="status-indicator" id="modelStatusBadge">
+          <span>Model: <strong style="color:#38bdf8" id="activeModelLabel">PINN-ResBiGRU + Impulse Anchor</strong></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+      <!-- Left Column: Controls, Sensor Capture, Athlete Metadata, VALD Export -->
+      <aside>
+        <!-- 1. Sensor Capture & Simulation Card -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">1. Chest IMU Capture &amp; Simulator</div>
+              <div class="card-subtitle">Quaternion gravity projection + 6-axis IMU</div>
+            </div>
+            <span class="badge-pill" id="sampleRateBadge">100 Hz</span>
+          </div>
+
+          <div class="form-group full-width" style="margin-bottom: 10px;">
+            <label for="demoPresetSelect">Synthetic Chest IMU + VALD Ground-Truth Preset</label>
+            <select id="demoPresetSelect" class="form-control">
+              <option value="youth_45kg">Indian Grassroots Youth (14y M · 45 kg · ~34.5 cm)</option>
+              <option value="khelo_52kg">Khelo India Sprinter (16y F · 52 kg · ~39.8 cm)</option>
+              <option value="elite_74kg">Senior National Athlete (23y M · 74 kg · ~51.2 cm)</option>
+              <option value="youth_32kg">Sub-Junior Grassroots Kid (10y F · 32 kg · ~25.4 cm)</option>
+            </select>
+          </div>
+
+          <div class="btn-stack">
+            <button type="button" id="btnSimulateJump" class="btn btn-sim">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Simulate Demo Jump (Chest IMU)
+            </button>
+
+            <div class="btn-row">
+              <button type="button" id="btnStartLive" class="btn btn-primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <circle cx="12" cy="12" r="4" fill="currentColor"></circle>
+                </svg>
+                Start Live IMU
+              </button>
+              <button type="button" id="btnStopLive" class="btn btn-danger" disabled>
+                Stop / Analyze
+              </button>
+            </div>
+          </div>
+
+          <!-- Quaternion & Calibration Telemetry -->
+          <div class="telemetry-box">
+            <div class="telemetry-row">
+              <span>Calibration Window (1.5s Quiet):</span>
+              <span class="telemetry-val" id="calibStatusLabel">Locked (1.000 BW)</span>
+            </div>
+            <div class="progress-bar-outer">
+              <div class="progress-bar-inner" id="calibProgressBar" style="width: 100%;"></div>
+            </div>
+            <div class="telemetry-row">
+              <span>Gravity Quaternion q_wb:</span>
+              <span class="telemetry-val" id="quatReadout">[0.996, -0.087, 0.012, 0.004]</span>
+            </div>
+            <div class="telemetry-row">
+              <span>Earth Vertical Accel a_z(t):</span>
+              <span class="telemetry-val" id="azReadout">0.00 m/s² (1.00 BW)</span>
+            </div>
+            <div class="telemetry-row">
+              <span>Chest Sagittal Pitch θ(t):</span>
+              <span class="telemetry-val" id="pitchReadout">10.1° anterior</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Athlete Metadata & GAMLSS Inputs -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">2. Athlete &amp; Indian Cohort Metadata</div>
+              <div class="card-subtitle">Used for N scaling &amp; GAMLSS LMS centiles</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="inputAge">Age (8–35 yrs)</label>
+              <input type="number" id="inputAge" class="form-control" min="8" max="35" step="1" value="14" />
+            </div>
+            <div class="form-group">
+              <label for="inputSex">Biological Sex</label>
+              <select id="inputSex" class="form-control">
+                <option value="M">Male (M)</option>
+                <option value="F">Female (F)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="inputMass">Body Mass (kg)</label>
+              <input type="number" id="inputMass" class="form-control" min="20" max="140" step="0.5" value="45.0" />
+            </div>
+            <div class="form-group">
+              <label for="inputHeight">Standing Height (cm)</label>
+              <input type="number" id="inputHeight" class="form-control" min="110" max="220" step="1" value="158" />
+            </div>
+            <div class="form-group full-width">
+              <label for="inputCohort">Normative Reference Cohort</label>
+              <select id="inputCohort" class="form-control">
+                <option value="indian_grassroots">Indian School &amp; Grassroots (GAMLSS LMS)</option>
+                <option value="khelo_india">Khelo India / SAI Talent Cohort (+12% Shift)</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. VALD ForceDecks Synchronized Data Collection & Model Hook -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">3. VALD ForceDecks Sync &amp; Export</div>
+              <div class="card-subtitle">Collect paired IMU + ForceDecks trials</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="inputAthleteId">Athlete ID</label>
+              <input type="text" id="inputAthleteId" class="form-control" value="IND-U16-042" />
+            </div>
+            <div class="form-group">
+              <label for="inputTrialId">Trial / ForceDecks ID</label>
+              <input type="text" id="inputTrialId" class="form-control" value="FD-CMJ-001" />
+            </div>
+            <div class="form-group full-width">
+              <label for="selectEstimatorMode">vGRF Estimation Pipeline</label>
+              <select id="selectEstimatorMode" class="form-control">
+                <option value="pinn_anchored">PINN Neural + Exact Impulse Anchor (Recommended)</option>
+                <option value="pinn_unanchored">PINN Neural Only (Before Impulse Projection)</option>
+                <option value="raw_imu">Raw Chest IMU (1 + a_z/g) — Uncorrected Trunk Artifact</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btn-stack">
+            <div class="btn-row">
+              <button type="button" id="btnExportCSV" class="btn btn-secondary">
+                Export CSV (IMU+vGRF)
+              </button>
+              <button type="button" id="btnExportJSON" class="btn btn-secondary">
+                Export Trial JSON
+              </button>
+            </div>
+
+            <label class="btn btn-secondary file-drop-label" for="inputModelFile">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span id="modelUploadLabel">Load Trained .onnx or Weights .json</span>
+            </label>
+            <input type="file" id="inputModelFile" class="hidden-input" accept=".onnx,.json" />
+          </div>
+        </section>
+      </aside>
+
+      <!-- Right Column: Waveforms, KPIs, GAMLSS Percentiles, Full Metrics Table -->
+      <main>
+        <!-- Top Hero KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card emerald">
+            <span class="kpi-label">Jump Height (Anchored)</span>
+            <div>
+              <span class="kpi-value" id="kpiJumpHeight">--</span>
+              <span class="kpi-unit">cm</span>
+            </div>
+            <span class="kpi-sub" id="kpiJumpHeightSub">Flight: -- ms | Imp: -- cm</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-label">Peak Concentric Force</span>
+            <div>
+              <span class="kpi-value" id="kpiPeakForceBW">--</span>
+              <span class="kpi-unit">BW</span>
+            </div>
+            <span class="kpi-sub" id="kpiPeakForceN">-- N absolute</span>
+          </div>
+
+          <div class="kpi-card orange">
+            <span class="kpi-label">Peak Concentric Power</span>
+            <div>
+              <span class="kpi-value" id="kpiPeakPowerRel">--</span>
+              <span class="kpi-unit">W/kg</span>
+            </div>
+            <span class="kpi-sub" id="kpiPeakPowerAbs">-- W peak</span>
+          </div>
+
+          <div class="kpi-card purple">
+            <span class="kpi-label">Takeoff Velocity (v_to)</span>
+            <div>
+              <span class="kpi-value" id="kpiTakeoffVel">--</span>
+              <span class="kpi-unit">m/s</span>
+            </div>
+            <span class="kpi-sub" id="kpiNetImpulseSub">Net Imp: -- N·s</span>
+          </div>
+
+          <div class="kpi-card amber">
+            <span class="kpi-label">RSImod (Explosiveness)</span>
+            <div>
+              <span class="kpi-value" id="kpiRsiMod">--</span>
+              <span class="kpi-unit">m/s</span>
+            </div>
+            <span class="kpi-sub" id="kpiContractionTimeSub">TTT: -- ms</span>
+          </div>
+
+          <div class="kpi-card rose">
+            <span class="kpi-label">Braking / Prop Impulse</span>
+            <div>
+              <span class="kpi-value" id="kpiImpulseRatio">--</span>
+              <span class="kpi-unit">N·s</span>
+            </div>
+            <span class="kpi-sub" id="kpiImpulseDetailSub">Brk: -- | Prp: -- N·s</span>
+          </div>
+        </div>
+
+        <!-- Interactive Waveform Card -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                Continuous CMJ Force-Velocity-Power Waveform Inspector
+              </div>
+              <div class="card-subtitle" id="chartHoverReadout">
+                Hover or drag across the chart to inspect instantaneous phase, vGRF (BW &amp; N), velocity (m/s), and power (W/kg).
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-toolbar">
+            <div class="chart-tabs" id="chartViewTabs">
+              <button type="button" class="btn btn-secondary btn-sm active" data-view="all">
+                Multi-Curve (vGRF + Vel + Power)
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" data-view="vgrf">
+                vGRF (BW) vs. VALD ForceDecks
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" data-view="kinematics">
+                Velocity v(t) &amp; CoM Depth z(t)
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" data-view="power">
+                Mechanical Power P(t) (W/kg)
+              </button>
+            </div>
+
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-swatch" style="background:#38bdf8"></span>PINN vGRF (BW)</span>
+              <span class="legend-item"><span class="legend-swatch" style="background:#94a3b8; border-bottom:1px dashed #94a3b8"></span>VALD Ground Truth</span>
+              <span class="legend-item"><span class="legend-swatch" style="background:#10b981"></span>Velocity v(t) (m/s)</span>
+              <span class="legend-item"><span class="legend-swatch" style="background:#f97316"></span>Power P(t) (W/kg)</span>
+            </div>
+          </div>
+
+          <div class="canvas-wrapper">
+            <canvas id="waveformCanvas" width="920" height="360"></canvas>
+          </div>
+
+          <!-- Detected Phase Timestamps -->
+          <div class="phase-strip" id="phaseSummaryStrip">
+            <span class="phase-chip">Unweighting t₀: <strong id="phT0">-- s</strong></span>
+            <span class="phase-chip">Braking Start: <strong id="phBrake">-- s</strong></span>
+            <span class="phase-chip">Propulsion Start (v=0): <strong id="phProp">-- s</strong></span>
+            <span class="phase-chip">Takeoff t_to: <strong id="phTakeoff">-- s</strong></span>
+            <span class="phase-chip">Landing t_land: <strong id="phLanding">-- s</strong></span>
+            <span class="phase-chip">Flight Time: <strong id="phFlight">-- ms</strong></span>
+          </div>
+
+          <!-- Exact Physics-Constrained Impulse-Momentum Verification Banner -->
+          <div class="physics-banner">
+            <div>
+              <div class="physics-formula">
+                ∫[t₀ → t_takeoff] (vGRF(t) − 1)·g dt = v_takeoff = ½·g·t_flight
+              </div>
+              <div style="color: var(--text-secondary); margin-top: 2px;" id="physicsAnchorText">
+                Newton Impulse-Momentum Anchoring active: zero integration drift across youth &amp; adult body masses.
+              </div>
+            </div>
+            <div style="font-family: var(--font-mono); text-align: right;" id="valdAccuracyBadge">
+              VALD Agreement: R² = -- | RMSE = -- BW
+            </div>
+          </div>
+        </section>
+
+        <!-- Indian Grassroots Normative Percentiles (GAMLSS LMS Preview) -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Indian Youth &amp; Athlete Percentile Preview (GAMLSS LMS Reference)</div>
+              <div class="card-subtitle" id="percentileCohortSubtitle">
+                Age- and sex-adjusted Box-Cox Cole &amp; Green (L, M, S) centile bands (P10–P95)
+              </div>
+            </div>
+            <span class="badge-pill emerald" id="overallAthleteTierBadge">Evaluated</span>
+          </div>
+
+          <div class="percentile-grid">
+            <!-- Jump Height Percentile -->
+            <div class="percentile-item">
+              <div class="percentile-header">
+                <span class="percentile-title">CMJ Jump Height (cm)</span>
+                <span class="centile-badge" id="pctBadgeHeight">P--</span>
+              </div>
+              <div class="centile-track">
+                <div class="centile-marker" id="pctMarkerHeight" style="left: 50%;"></div>
+              </div>
+              <div class="centile-scale" id="pctScaleHeight">
+                <span>P10: --</span>
+                <span>P50: --</span>
+                <span>P75: --</span>
+                <span>P95: --</span>
+              </div>
+            </div>
+
+            <!-- Peak Power Percentile -->
+            <div class="percentile-item">
+              <div class="percentile-header">
+                <span class="percentile-title">Relative Peak Power (W/kg)</span>
+                <span class="centile-badge" id="pctBadgePower">P--</span>
+              </div>
+              <div class="centile-track">
+                <div class="centile-marker" id="pctMarkerPower" style="left: 50%;"></div>
+              </div>
+              <div class="centile-scale" id="pctScalePower">
+                <span>P10: --</span>
+                <span>P50: --</span>
+                <span>P75: --</span>
+                <span>P95: --</span>
+              </div>
+            </div>
+
+            <!-- RSImod Percentile -->
+            <div class="percentile-item">
+              <div class="percentile-header">
+                <span class="percentile-title">RSImod (JH / Contraction Time)</span>
+                <span class="centile-badge" id="pctBadgeRsi">P--</span>
+              </div>
+              <div class="centile-track">
+                <div class="centile-marker" id="pctMarkerRsi" style="left: 50%;"></div>
+              </div>
+              <div class="centile-scale" id="pctScaleRsi">
+                <span>P10: --</span>
+                <span>P50: --</span>
+                <span>P75: --</span>
+                <span>P95: --</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Complete Discrete Biomechanical Metrics Table -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">VALD ForceDecks-Equivalent Discrete CMJ Metrics</div>
+              <div class="card-subtitle">Complete phase-by-phase force, impulse, velocity, power, and reactivity breakdown</div>
+            </div>
+          </div>
+
+          <div class="metrics-table-wrap">
+            <table class="metrics-table">
+              <thead>
+                <tr>
+                  <th>Biomechanical Metric</th>
+                  <th>Phase / Formula</th>
+                  <th>Relative Value</th>
+                  <th>Absolute Value</th>
+                </tr>
+              </thead>
+              <tbody id="metricsTableBody">
+                <!-- Populated dynamically by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <footer class="footer-note">
+      BharatJump PINN Prototype · Built for Free Indian Grassroots Athlete Assessment &amp; Paired VALD ForceDecks Research · Runs 100% On-Device
+    </footer>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

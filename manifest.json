@@ -1,0 +1,17 @@
+{
+  "name": "BharatJump PINN — Smartphone CMJ & vGRF Lab",
+  "short_name": "BharatJump",
+  "description": "Zero-cost, offline-first Smartphone Countermovement Jump (CMJ) & Physics-Informed vGRF Estimation Platform for Indian Grassroots Athletes & VALD ForceDecks Calibration.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#0f172a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='24' fill='%230f172a'/%3E%3Cpath d='M24 96 L44 96 L56 48 L72 88 L88 28 L104 96' stroke='%2338bdf8' stroke-width='10' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='88' cy='28' r='8' fill='%23f97316'/%3E%3C/svg%3E",
+      "sizes": "128x128",
+      "type": "image/svg+xml"
+    }
+  ]
+}
