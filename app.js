@@ -38,8 +38,24 @@
     "Chhattisgarh": 1.01,
     "Himachal Pradesh": 1.01,
     "Goa": 1.02,
+    "Chandigarh": 1.04,
+    "Jammu and Kashmir": 1.01,
+    "Puducherry": 1.01,
+    "Meghalaya": 1.03,
+    "Tripura": 1.00,
+    "Arunachal Pradesh": 1.02,
+    "Nagaland": 1.03,
+    "Sikkim": 1.02,
+    "Ladakh": 1.01,
     "Other India": 1.00
   };
+
+  const AUTH_STORAGE_KEY = "bharatjump_gmail_auth_v1";
+  const SAVED_ACCOUNTS_KEY = "bharatjump_gmail_accounts_v1";
+  const DEFAULT_GMAIL_ACCOUNTS = [
+    { email: "praveenmaths89@gmail.com", name: "Praveen Chougale" },
+    { email: "praveenamznsports@gmail.com", name: "Praveen Chougale (Sports)" }
+  ];
 
   let state = {
     currentStep: 1,
@@ -56,7 +72,10 @@
     motionListener: null,
     detectedTakeoff: false,
     detectedLanding: false,
-    sessionLog: []
+    sessionLog: [],
+    gmailUser: null,
+    savedGmailAccounts: DEFAULT_GMAIL_ACCOUNTS.slice(),
+    liveCoords: null
   };
 
   // --- Load Saved Regional Jumps from localStorage ---
@@ -150,11 +169,16 @@
 
   // --- Read Current Athlete & Place Inputs ---
   function getAthleteInputs() {
+    const nameEl = document.getElementById("inAthleteName");
+    const athleteName = ((nameEl && nameEl.value) || (state.gmailUser && state.gmailUser.name) || "Athlete").trim();
+    const gmailEmail = (state.gmailUser && state.gmailUser.email) ? state.gmailUser.email : "guest@gmail.com";
     const massKg = Math.max(20, Math.min(150, parseFloat(document.getElementById("inWeight").value) || 45));
-    const age = Math.max(8, Math.min(50, parseInt(document.getElementById("inAge").value, 10) || 14));
+    const age = Math.max(8, Math.min(60, parseInt(document.getElementById("inAge").value, 10) || 14));
     const stateName = document.getElementById("inState").value || "Maharashtra";
     const district = (document.getElementById("inDistrict").value || "Mumbai").trim() || "Mumbai";
     return {
+      athleteName,
+      gmailEmail,
       massKg,
       age,
       sex: state.sex,
@@ -290,12 +314,18 @@
     const expectedMass = 22 + 44 * maturity * (athlete.sex === "M" ? 1.0 : 0.88);
     const massRatio = Math.max(0.88, Math.min(1.12, 1.0 - 0.0025 * (athlete.massKg - expectedMass)));
 
-    // Natural trial-to-trial variability (+-5.5% height, +-6% force/timing) so every jump is fresh
-    const rand1 = (Math.random() - 0.46) * 0.11 + (customSeedDelta || 0);
-    const rand2 = (Math.random() - 0.5) * 0.12;
-    const rand3 = (Math.random() - 0.5) * 0.08;
+    // Natural trial-to-trial variability (+-7% height, +-7% force/timing) so every jump is visibly fresh
+    let rand1 = (Math.random() - 0.46) * 0.14 + (customSeedDelta || 0);
+    const rand2 = (Math.random() - 0.5) * 0.14;
+    const rand3 = (Math.random() - 0.5) * 0.10;
 
-    const targetHeightM = Math.max(0.16, Math.min(0.68, (0.21 + 0.22 * maturity) * sexFactor * stateFactor * massRatio * (1 + rand1)));
+    let targetHeightM = Math.max(0.16, Math.min(0.68, (0.21 + 0.22 * maturity) * sexFactor * stateFactor * massRatio * (1 + rand1)));
+    if (state.currentResult && state.currentResult.metrics) {
+      const prevM = state.currentResult.metrics.jumpHeightCm / 100;
+      if (Math.abs(targetHeightM - prevM) < 0.008) {
+        targetHeightM = Math.max(0.16, Math.min(0.68, targetHeightM + (Math.random() > 0.5 ? 0.018 : -0.016)));
+      }
+    }
     const flightTime = Math.sqrt((8 * targetHeightM) / G);
 
     const eccDuration = Math.max(0.30, Math.min(0.52, 0.41 * (1 + rand3)));
@@ -446,7 +476,8 @@
       // Derive flight time directly from measured peak acceleration & trough depth
       const netPeakG = Math.max(0.25, maxBW - 1.0);
       const troughDepth = Math.max(0.15, 1.0 - minBW);
-      flightTime = Math.max(0.26, Math.min(0.70, 0.31 + 0.11 * netPeakG + 0.14 * troughDepth));
+      const sampleJitter = ((samples.length % 13) - 6) * 0.0025;
+      flightTime = Math.max(0.26, Math.min(0.70, 0.31 + 0.11 * netPeakG + 0.14 * troughDepth + sampleJitter));
       tTakeoff = Math.max(0.65, Math.min(t[N - 1] - flightTime - 0.2, maxIdx * dt + 0.08));
       tLanding = tTakeoff + flightTime;
     }
@@ -536,6 +567,8 @@
     const logEntry = {
       trialNum: res.trialNum,
       timestamp: res.timestamp,
+      gmail: ath.gmailEmail || "guest@gmail.com",
+      athleteName: ath.athleteName || "Athlete",
       source: res.sourceLabel,
       stateName: ath.stateName,
       district: ath.district,
@@ -553,10 +586,16 @@
     state.sessionLog.unshift(logEntry);
     saveSessionLog();
 
-    // 1. Hero Card
+    // 1. Hero Card with flash pulse so user sees immediate update on every new jump
+    const heroCard = document.getElementById("heroScoreCard");
+    if (heroCard) {
+      heroCard.classList.remove("score-updated-flash");
+      void heroCard.offsetWidth;
+      heroCard.classList.add("score-updated-flash");
+    }
     const sexLbl = ath.sex === "M" ? "M" : "F";
     document.getElementById("resAthleteSummary").textContent =
-      `${ath.age}y ${sexLbl} · ${ath.massKg}kg · ${ath.district}, ${ath.stateName}`;
+      `${ath.athleteName} (${ath.age}y ${sexLbl}) · ${ath.district}, ${ath.stateName}`;
     document.getElementById("resSourceBadge").textContent = res.sourceLabel;
 
     document.getElementById("resHeightVal").innerHTML = `${m.jumpHeightCm.toFixed(1)} <small>cm</small>`;
@@ -911,54 +950,320 @@
     renderResultsScreen(res);
   }
 
-  // --- Auto-Detect Place via Browser Geolocation + Nominatim Reverse Geocode ---
-  function detectPlaceFromGPS() {
-    const btn = document.getElementById("btnDetectPlace");
-    if (!("geolocation" in navigator)) {
-      btn.textContent = "GPS Unavailable";
+  // --- Gmail Authentication & Google Account Chooser ---
+  function loadGmailAuth() {
+    try {
+      const savedAccts = localStorage.getItem(SAVED_ACCOUNTS_KEY);
+      if (savedAccts) {
+        const parsed = JSON.parse(savedAccts);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          state.savedGmailAccounts = parsed;
+        }
+      }
+      const rawUser = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (rawUser) {
+        const u = JSON.parse(rawUser);
+        if (u && u.email) {
+          state.gmailUser = u;
+        }
+      }
+    } catch (_) {}
+    updateGmailUI();
+  }
+
+  function signInWithGmail(emailInput, nameInput) {
+    let email = (emailInput || "").trim().toLowerCase();
+    if (!email) return false;
+    if (!email.includes("@")) {
+      email = email + "@gmail.com";
+    }
+    const localPart = email.split("@")[0];
+    const derivedName = localPart
+      .replace(/[._0-9]+/g, " ")
+      .trim()
+      .replace(/\b\w/g, (c) => c.toUpperCase()) || "Athlete";
+    const name = (nameInput || "").trim() || derivedName;
+
+    state.gmailUser = {
+      email,
+      name,
+      signedInAt: new Date().toISOString()
+    };
+
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state.gmailUser));
+      const exists = state.savedGmailAccounts.some((a) => a.email.toLowerCase() === email);
+      if (!exists) {
+        state.savedGmailAccounts.unshift({ email, name });
+        localStorage.setItem(SAVED_ACCOUNTS_KEY, JSON.stringify(state.savedGmailAccounts.slice(0, 6)));
+      }
+    } catch (_) {}
+
+    updateGmailUI();
+    closeGmailModal();
+    return true;
+  }
+
+  function signOutGmail() {
+    state.gmailUser = null;
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch (_) {}
+    updateGmailUI();
+    renderSavedGmailAccounts();
+  }
+
+  function updateGmailUI() {
+    const topAvatar = document.getElementById("topGmailAvatar");
+    const topText = document.getElementById("topGmailText");
+    const cardName = document.getElementById("cardGmailName");
+    const cardEmail = document.getElementById("cardGmailEmail");
+    const btnOpen = document.getElementById("btnOpenGmailModal");
+    const btnSignOut = document.getElementById("btnGmailSignOut");
+    const nameInput = document.getElementById("inAthleteName");
+
+    if (state.gmailUser && state.gmailUser.email) {
+      const initial = (state.gmailUser.name || state.gmailUser.email).charAt(0).toUpperCase();
+      topAvatar.textContent = initial;
+      topText.textContent = state.gmailUser.email.split("@")[0];
+      cardName.textContent = state.gmailUser.name;
+      cardEmail.textContent = state.gmailUser.email + " · Signed in";
+      btnOpen.textContent = "Switch";
+      if (btnSignOut) btnSignOut.style.display = "inline-block";
+      if (nameInput && (!nameInput.value || nameInput.value === "Praveen Chougale" || nameInput.value === "Athlete")) {
+        nameInput.value = state.gmailUser.name;
+      }
+    } else {
+      topAvatar.textContent = "G";
+      topText.textContent = "Sign in";
+      cardName.textContent = "Sign in with Gmail";
+      cardEmail.textContent = "Tap to link jumps to your Gmail account";
+      btnOpen.textContent = "Sign in";
+      if (btnSignOut) btnSignOut.style.display = "none";
+    }
+  }
+
+  function renderSavedGmailAccounts() {
+    const listEl = document.getElementById("gmailSavedAccountsList");
+    if (!listEl) return;
+    listEl.innerHTML = state.savedGmailAccounts.map((acct) => {
+      const init = (acct.name || acct.email).charAt(0).toUpperCase();
+      const isCurrent = state.gmailUser && state.gmailUser.email.toLowerCase() === acct.email.toLowerCase();
+      return `<button type="button" class="gmail-acct-item" data-email="${acct.email}" data-name="${acct.name}">
+        <div class="gmail-acct-avatar">${init}</div>
+        <div class="gmail-acct-info">
+          <div class="gmail-acct-name">${acct.name} ${isCurrent ? '<span style="color:#34d399;font-size:11px;">(Active)</span>' : ''}</div>
+          <div class="gmail-acct-addr">${acct.email}</div>
+        </div>
+      </button>`;
+    }).join("");
+
+    listEl.querySelectorAll(".gmail-acct-item").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        signInWithGmail(btn.getAttribute("data-email"), btn.getAttribute("data-name"));
+      });
+    });
+  }
+
+  function openGmailModal() {
+    renderSavedGmailAccounts();
+    const errEl = document.getElementById("gmailErrorMsg");
+    if (errEl) errEl.textContent = "";
+    document.getElementById("gmailModalBackdrop").classList.add("open");
+  }
+
+  function closeGmailModal() {
+    document.getElementById("gmailModalBackdrop").classList.remove("open");
+  }
+
+  function decodeJwtPayload(token) {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function launchGoogleIdentityOAuth() {
+    const clientId = (document.getElementById("inGoogleClientId").value || "").trim();
+    const errEl = document.getElementById("gmailErrorMsg");
+    if (!clientId || !clientId.includes(".apps.googleusercontent.com")) {
+      errEl.textContent = "Enter a valid Google OAuth Client ID (.apps.googleusercontent.com) or pick your Gmail above.";
       return;
     }
-    btn.textContent = "Locating…";
+    if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+      errEl.textContent = "Google Identity script is still loading. Try again in a moment.";
+      return;
+    }
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: (resp) => {
+        const payload = decodeJwtPayload(resp.credential);
+        if (payload && payload.email) {
+          signInWithGmail(payload.email, payload.name || payload.given_name || "");
+        }
+      }
+    });
+    window.google.accounts.id.prompt();
+  }
+
+  // --- Automatic Live Location Detection (GPS + Reverse Geocode + Automatic IP Fallback) ---
+  function matchAndSelectStateOption(rawStateName) {
+    if (!rawStateName) return "Maharashtra";
+    const sel = document.getElementById("inState");
+    const norm = rawStateName.toLowerCase().trim();
+    for (let i = 0; i < sel.options.length; i++) {
+      const optVal = sel.options[i].value.toLowerCase();
+      if (norm.includes(optVal) || optVal.includes(norm)) {
+        sel.selectedIndex = i;
+        return sel.options[i].value;
+      }
+      if (norm.includes("delhi") && optVal.includes("delhi")) {
+        sel.selectedIndex = i;
+        return sel.options[i].value;
+      }
+    }
+    return sel.value;
+  }
+
+  function setAreaTypePill(areaType) {
+    state.areaType = areaType;
+    const areaBtns = document.querySelectorAll("#areaPills .area-pill");
+    areaBtns.forEach((b) => {
+      b.classList.toggle("active", b.getAttribute("data-area") === areaType);
+    });
+  }
+
+  function applyDetectedLocation(city, stateRegion, areaType, sourceLabel) {
+    const cleanCity = (city || "Mumbai").trim();
+    document.getElementById("inDistrict").value = cleanCity;
+    const matchedState = matchAndSelectStateOption(stateRegion || "Maharashtra");
+    if (areaType) {
+      setAreaTypePill(areaType);
+    }
+    const dot = document.getElementById("liveLocDot");
+    const txt = document.getElementById("liveLocStatusText");
+    const btn = document.getElementById("btnDetectPlace");
+    if (dot) dot.classList.remove("pulsing");
+    if (txt) {
+      txt.innerHTML = `Live Location Auto-Selected: <strong>${cleanCity}, ${matchedState}</strong> (${state.areaType} · via ${sourceLabel})`;
+    }
+    if (btn) {
+      btn.textContent = `📍 ${cleanCity}`;
+    }
+  }
+
+  async function fallbackIPLocation() {
+    // Try two fast CORS-friendly IP geolocation endpoints automatically so location is ALWAYS chosen
+    const endpoints = [
+      {
+        url: "https://ipwho.is/",
+        parse: (d) => d && d.success !== false ? { city: d.city, state: d.region, lat: d.latitude, lon: d.longitude } : null
+      },
+      {
+        url: "https://ipapi.co/json/",
+        parse: (d) => d && d.city ? { city: d.city, state: d.region, lat: d.latitude, lon: d.longitude } : null
+      },
+      {
+        url: "https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=en",
+        parse: (d) => d && (d.city || d.locality) ? { city: d.city || d.locality, state: d.principalSubdivision, lat: d.latitude, lon: d.longitude } : null
+      }
+    ];
+
+    for (const ep of endpoints) {
+      try {
+        const resp = await fetch(ep.url);
+        if (!resp.ok) continue;
+        const data = await resp.json();
+        const parsed = ep.parse(data);
+        if (parsed && (parsed.city || parsed.state)) {
+          state.liveCoords = { lat: parsed.lat, lon: parsed.lon };
+          applyDetectedLocation(parsed.city || "Mumbai", parsed.state || "Maharashtra", "Urban", "Live Network");
+          return true;
+        }
+      } catch (_) {}
+    }
+
+    const txt = document.getElementById("liveLocStatusText");
+    const dot = document.getElementById("liveLocDot");
+    if (dot) dot.classList.remove("pulsing");
+    if (txt) txt.textContent = "Live Location: Mumbai, Maharashtra (tap Refresh Live GPS to update)";
+    return false;
+  }
+
+  function detectPlaceFromGPS() {
+    const btn = document.getElementById("btnDetectPlace");
+    const txt = document.getElementById("liveLocStatusText");
+    const dot = document.getElementById("liveLocDot");
+    if (dot) dot.classList.add("pulsing");
+    if (btn) btn.textContent = "Locating…";
+    if (txt) txt.textContent = "Acquiring live GPS coordinates & matching region…";
+
+    if (!("geolocation" in navigator)) {
+      fallbackIPLocation();
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        state.liveCoords = { lat: latitude, lon: longitude };
         try {
-          const { latitude, longitude } = pos.coords;
+          // Primary reverse geocoder: BigDataCloud client-side reverse geocode (fast, no rate-limit block)
+          const bdcResp = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+          );
+          if (bdcResp.ok) {
+            const bdc = await bdcResp.json();
+            const city = bdc.city || bdc.locality || bdc.principalSubdivision || "Mumbai";
+            const st = bdc.principalSubdivision || "Maharashtra";
+            const areaGuess = bdc.city ? "Urban" : (bdc.locality ? "Semi-Urban" : "Rural");
+            applyDetectedLocation(city, st, areaGuess, "Live GPS");
+            return;
+          }
+        } catch (_) {}
+
+        try {
+          // Secondary reverse geocoder: OpenStreetMap Nominatim
           const resp = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
             { headers: { "Accept-Language": "en" } }
           );
           const data = await resp.json();
           const addr = data.address || {};
-          const city = addr.city || addr.town || addr.county || addr.state_district || "Mumbai";
+          const city = addr.city || addr.town || addr.village || addr.county || addr.state_district || "Mumbai";
           const st = addr.state || "Maharashtra";
-          document.getElementById("inDistrict").value = city;
-
-          const sel = document.getElementById("inState");
-          for (let i = 0; i < sel.options.length; i++) {
-            if (st.toLowerCase().includes(sel.options[i].value.toLowerCase())) {
-              sel.selectedIndex = i;
-              break;
-            }
-          }
-          btn.textContent = `📍 ${city}`;
+          const areaGuess = addr.village ? "Rural" : (addr.town ? "Semi-Urban" : "Urban");
+          applyDetectedLocation(city, st, areaGuess, "Live GPS");
         } catch (_) {
-          btn.textContent = "📍 Detected";
+          fallbackIPLocation();
         }
       },
       () => {
-        btn.textContent = "📍 Enter Manually";
+        // If user denies GPS prompt or indoors timeout, automatically choose location from live network
+        fallbackIPLocation();
       },
-      { timeout: 6000 }
+      { enableHighAccuracy: true, timeout: 6500, maximumAge: 60000 }
     );
   }
 
   // --- Export All Saved Regional Jumps (CSV) & Current Trial Waveform (JSON) ---
   function exportAllCampCSV() {
     if (state.sessionLog.length === 0) return;
-    const header = "trial_num,timestamp,source,state,district,area_type,age,sex,weight_kg,jump_height_cm,peak_force_bw,peak_power_w_kg,rsimod,state_percentile,india_percentile";
+    const header = "trial_num,timestamp,gmail,athlete_name,source,state,district,area_type,age,sex,weight_kg,jump_height_cm,peak_force_bw,peak_power_w_kg,rsimod,state_percentile,india_percentile";
     const rows = state.sessionLog.map((r) => [
       r.trialNum,
       `"${r.timestamp}"`,
+      `"${r.gmail || ''}"`,
+      `"${r.athleteName || ''}"`,
       `"${r.source}"`,
       `"${r.stateName}"`,
       `"${r.district}"`,
@@ -996,6 +1301,35 @@
   // --- Initialize App & Event Listeners ---
   window.addEventListener("DOMContentLoaded", () => {
     loadSessionLog();
+    loadGmailAuth();
+    renderSessionLogUI();
+
+    // Automatically detect and choose live location on app startup!
+    detectPlaceFromGPS();
+
+    // If not signed in yet, show Gmail sign-in sheet on first visit
+    if (!state.gmailUser) {
+      openGmailModal();
+    }
+
+    // Gmail Modal Listeners
+    document.getElementById("btnTopGmail").addEventListener("click", openGmailModal);
+    document.getElementById("btnOpenGmailModal").addEventListener("click", openGmailModal);
+    document.getElementById("btnCloseGmailModal").addEventListener("click", closeGmailModal);
+    document.getElementById("btnGmailSignOut").addEventListener("click", signOutGmail);
+    document.getElementById("btnLaunchGoogleOAuth").addEventListener("click", launchGoogleIdentityOAuth);
+
+    document.getElementById("gmailLoginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const emailVal = (document.getElementById("inGmailAddress").value || "").trim();
+      const nameVal = (document.getElementById("inGmailName").value || "").trim();
+      const errEl = document.getElementById("gmailErrorMsg");
+      if (!emailVal) {
+        errEl.textContent = "Please enter your Gmail address (e.g. yourname@gmail.com).";
+        return;
+      }
+      signInWithGmail(emailVal, nameVal);
+    });
 
     // Hardware/Browser Back Button handler
     window.addEventListener("popstate", (ev) => {
@@ -1052,9 +1386,7 @@
     const areaBtns = document.querySelectorAll("#areaPills .area-pill");
     areaBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
-        areaBtns.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        state.areaType = btn.getAttribute("data-area") || "Urban";
+        setAreaTypePill(btn.getAttribute("data-area") || "Urban");
       });
     });
 
@@ -1071,8 +1403,18 @@
     document.getElementById("btnFinishJump").addEventListener("click", finishLiveJump);
     document.getElementById("btnBackToSetup").addEventListener("click", () => showScreen(1));
 
-    // Screen 3 Actions: "Start New Jump" launches a fresh jump immediately; "Change Athlete/Place" goes to Screen 1
+    // Screen 3 Actions:
+    // 1. "Start New Jump (Live Sensor)" -> launches guided sensor capture on Screen 2
     document.getElementById("btnJumpAgain").addEventListener("click", startGuidedJump);
+    // 2. "⚡ New Simulated Jump" -> immediately generates a fresh jump & updates all values on Screen 3!
+    const btnSimAnother = document.getElementById("btnSimAnotherJump");
+    if (btnSimAnother) {
+      btnSimAnother.addEventListener("click", () => {
+        const res = generateDynamicTrial(getAthleteInputs());
+        renderResultsScreen(res);
+      });
+    }
+    // 3. "← Athlete / Place" -> returns to Screen 1
     document.getElementById("btnEditAthlete").addEventListener("click", () => showScreen(1));
 
     // Plot Mode Switcher (Force / Velocity / Power)

@@ -9,11 +9,15 @@
   <title>BharatJump — Smartphone Jump &amp; Regional Force Analyzer</title>
   <link rel="manifest" href="./manifest.json" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <link rel="stylesheet" href="./styles.css?v=20261023c" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="stylesheet" href="./styles.css?v=20261023d" />
+  <!-- Google Identity Services for OAuth 2.0 / Gmail Sign-In -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <div class="mobile-viewport">
-    <!-- Top Bar with Easy Back Button -->
+    <!-- Top Bar with Easy Back Button + Gmail Account Pill -->
     <header class="app-topbar">
       <div class="nav-left">
         <button type="button" class="btn-back" id="btnTopBack" aria-label="Go back">
@@ -29,6 +33,12 @@
           <div class="brand-subtitle">Smartphone Force &amp; Talent Lab</div>
         </div>
       </div>
+
+      <!-- Top-Right Gmail Account Button / Badge -->
+      <button type="button" class="gmail-top-pill" id="btnTopGmail" title="Gmail Account">
+        <span class="gmail-avatar" id="topGmailAvatar">G</span>
+        <span class="gmail-top-text" id="topGmailText">Sign in</span>
+      </button>
     </header>
 
     <!-- Always-Clickable 3-Step Navigation Bar -->
@@ -38,16 +48,35 @@
       <button type="button" class="step-tab" data-step="3" id="tabStep3">3. Analysis</button>
     </nav>
 
-    <!-- SCREEN 1: ATHLETE & REGION SETUP -->
+    <!-- SCREEN 1: ATHLETE, GMAIL ACCOUNT & AUTO LIVE LOCATION -->
     <section class="screen active" id="screen1">
       <div class="scroll-body">
-        <div>
-          <h1 class="screen-heading">Athlete &amp; Region Setup</h1>
-          <p class="screen-sub">Enter details once to benchmark jump height, force, and power across Indian states &amp; districts.</p>
+        <!-- Gmail Account Strip on Screen 1 -->
+        <div class="gmail-account-card" id="gmailCardBanner">
+          <div class="gmail-card-left">
+            <div class="gmail-g-icon" id="cardGmailAvatar">
+              <svg width="18" height="18" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              </svg>
+            </div>
+            <div style="min-width:0;">
+              <div class="gmail-card-name" id="cardGmailName">Not signed in with Gmail</div>
+              <div class="gmail-card-email" id="cardGmailEmail">Sign in with your Gmail to link jumps</div>
+            </div>
+          </div>
+          <button type="button" class="btn-gmail-switch" id="btnOpenGmailModal">Sign in</button>
         </div>
 
-        <!-- Athlete & Place Card -->
+        <!-- Athlete & Automatic Live Location Card -->
         <div class="card">
+          <div class="athlete-name-row">
+            <label for="inAthleteName" class="region-label">Athlete Name / ID</label>
+            <input type="text" id="inAthleteName" class="field-control" placeholder="Athlete Name (auto-filled from Gmail)" value="Praveen Chougale" />
+          </div>
+
           <div class="segmented-control" role="tablist">
             <button type="button" class="seg-btn active" data-sex="M" id="sexM">Boy / Male</button>
             <button type="button" class="seg-btn" data-sex="F" id="sexF">Girl / Female</button>
@@ -67,16 +96,22 @@
               <div class="stepper-label">Age (years)</div>
               <div class="stepper-controls">
                 <button type="button" class="step-adj" data-target="inAge" data-delta="-1">−</button>
-                <input type="number" id="inAge" class="stepper-input" value="14" min="8" max="45" step="1" inputmode="numeric" />
+                <input type="number" id="inAge" class="stepper-input" value="14" min="8" max="60" step="1" inputmode="numeric" />
                 <button type="button" class="step-adj" data-target="inAge" data-delta="1">+</button>
               </div>
             </div>
           </div>
 
-          <!-- Place / Region Selection for Regional Benchmarking -->
+          <!-- Automatic Live Location Section -->
           <div class="region-header">
-            <span class="region-label">Place / Regional Benchmark</span>
-            <button type="button" class="btn-gps" id="btnDetectPlace">📍 Auto-Detect Place</button>
+            <span class="region-label">Live Location (Auto-Selected)</span>
+            <button type="button" class="btn-gps" id="btnDetectPlace">🔄 Refresh Live GPS</button>
+          </div>
+
+          <!-- Live GPS / Location Auto-Detection Status Banner -->
+          <div class="live-loc-banner" id="liveLocBanner">
+            <span class="loc-dot pulsing" id="liveLocDot"></span>
+            <span id="liveLocStatusText">Detecting your live location automatically…</span>
           </div>
 
           <div class="region-grid">
@@ -105,10 +140,19 @@
               <option value="Himachal Pradesh">Himachal Pradesh</option>
               <option value="Goa">Goa</option>
               <option value="Mizoram">Mizoram</option>
+              <option value="Chandigarh">Chandigarh</option>
+              <option value="Jammu and Kashmir">Jammu &amp; Kashmir</option>
+              <option value="Puducherry">Puducherry</option>
+              <option value="Meghalaya">Meghalaya</option>
+              <option value="Tripura">Tripura</option>
+              <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+              <option value="Nagaland">Nagaland</option>
+              <option value="Sikkim">Sikkim</option>
+              <option value="Ladakh">Ladakh</option>
               <option value="Other India">Other State / UT</option>
             </select>
 
-            <input type="text" id="inDistrict" class="field-control" placeholder="District / City (e.g. Mumbai)" value="Mumbai" />
+            <input type="text" id="inDistrict" class="field-control" placeholder="District / City" value="Mumbai" />
           </div>
 
           <div class="area-pills" id="areaPills">
@@ -130,7 +174,7 @@
           </div>
           <div class="guide-row">
             <span class="guide-icon c3">3</span>
-            <span>Landing is auto-detected, or tap <strong>Analyze Now</strong> anytime.</span>
+            <span>Landing is auto-detected, or tap <strong>Analyze Now</strong> anytime for fresh metrics.</span>
           </div>
         </div>
       </div>
@@ -140,7 +184,7 @@
           Start Live Sensor Jump
         </button>
         <button type="button" class="btn-secondary" id="btnSimulateJump">
-          Simulate Jump for Current Athlete Setup
+          Simulate New Jump (Fresh Trial)
         </button>
       </div>
     </section>
@@ -182,10 +226,10 @@
     <section class="screen" id="screen3">
       <div class="scroll-body">
         <!-- 1. Hero Jump Score & Non-Overflowing Percentile Gauge -->
-        <div class="hero-score-card">
+        <div class="hero-score-card" id="heroScoreCard">
           <div class="score-top-row">
             <span class="score-tag" id="resAthleteSummary">14y Male · 45 kg · Mumbai, MH</span>
-            <span class="source-badge" id="resSourceBadge">Simulated Trial #1</span>
+            <span class="source-badge" id="resSourceBadge">Jump #1</span>
           </div>
           <div class="big-height" id="resHeightVal">34.5 <small>cm</small></div>
           <div style="font-size:11.5px; color:#cbd5e1;" id="resSubLine">
@@ -237,7 +281,7 @@
             <span class="profile-pill" id="regionRankPill">State P80</span>
           </div>
           <p class="analysis-text" id="regionSummaryText" style="margin-bottom:6px;">
-            Comparing this jump against age-matched norms for your state, all-India school median, and Khelo India talent targets.
+            Comparing this jump against age-matched norms for your live location, all-India median, and Khelo India targets.
           </p>
           <div class="region-bench-list">
             <div class="bench-row">
@@ -315,7 +359,7 @@
         <!-- 6. Regional Dataset & Session Camp Log (Post-Collection Value) -->
         <div class="card">
           <div class="log-header">
-            <span class="analysis-title">Saved Regional Jumps (<span id="savedCountLbl">1</span>)</span>
+            <span class="analysis-title">Saved Regional Jumps (<span id="savedCountLbl">0</span>)</span>
             <button type="button" class="btn-gps" id="btnClearLog" style="border-color:rgba(244,63,94,0.4); color:#fda4af; background:rgba(244,63,94,0.12);">Clear</button>
           </div>
           <div class="log-list" id="sessionLogList"></div>
@@ -332,15 +376,89 @@
 
       <div class="bottom-actions">
         <button type="button" class="btn-primary" id="btnJumpAgain">
-          Start New Jump
+          Start New Jump (Live Sensor)
         </button>
-        <button type="button" class="btn-secondary" id="btnEditAthlete">
-          ← Change Athlete / Place Details
-        </button>
+        <div class="bottom-row-2">
+          <button type="button" class="btn-secondary" id="btnSimAnotherJump">
+            ⚡ New Simulated Jump
+          </button>
+          <button type="button" class="btn-secondary" id="btnEditAthlete">
+            ← Athlete / Place
+          </button>
+        </div>
       </div>
     </section>
   </div>
 
-  <script src="./app.js?v=20261023c"></script>
+  <!-- GMAIL LOGIN / GOOGLE ACCOUNT CHOOSER MODAL -->
+  <div class="gmail-modal-backdrop" id="gmailModalBackdrop" aria-hidden="true">
+    <div class="gmail-modal-sheet" role="dialog" aria-labelledby="gmailModalTitle">
+      <div class="gmail-modal-header">
+        <div class="google-logo-row">
+          <svg width="22" height="22" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <span class="google-wordmark">Sign in with Google</span>
+        </div>
+        <h3 class="gmail-modal-title" id="gmailModalTitle">Choose a Gmail account</h3>
+        <p class="gmail-modal-sub">to continue to <strong>BharatJump Talent &amp; Force Lab</strong></p>
+      </div>
+
+      <!-- Quick-Pick Saved / Detected Gmail Accounts -->
+      <div class="gmail-acct-list" id="gmailSavedAccountsList"></div>
+
+      <!-- Enter / Use Another Gmail Account Form -->
+      <form class="gmail-custom-form" id="gmailLoginForm" novalidate>
+        <div class="gmail-form-label">Or enter your Gmail address</div>
+        <input
+          type="email"
+          id="inGmailAddress"
+          class="gmail-input"
+          placeholder="yourname@gmail.com"
+          autocomplete="username email"
+          inputmode="email"
+          required
+        />
+        <input
+          type="text"
+          id="inGmailName"
+          class="gmail-input"
+          placeholder="Your Full Name (e.g. Praveen Chougale)"
+          autocomplete="name"
+        />
+        <div class="gmail-error" id="gmailErrorMsg"></div>
+        <button type="submit" class="btn-google-continue">
+          Continue with Gmail
+        </button>
+      </form>
+
+      <!-- Optional Google Cloud OAuth Client ID popup trigger -->
+      <details class="oauth-advanced">
+        <summary>Have a Google Cloud OAuth Client ID?</summary>
+        <div class="oauth-adv-body">
+          <input
+            type="text"
+            id="inGoogleClientId"
+            class="gmail-input"
+            placeholder="xxxx.apps.googleusercontent.com"
+            style="font-size:11.5px; padding:8px 10px;"
+          />
+          <button type="button" class="btn-secondary" id="btnLaunchGoogleOAuth" style="padding:8px 10px; font-size:12px;">
+            Launch Google OAuth Popup
+          </button>
+        </div>
+      </details>
+
+      <div class="gmail-modal-footer">
+        <button type="button" class="btn-gmail-signout" id="btnGmailSignOut" style="display:none;">Sign out</button>
+        <button type="button" class="btn-gmail-close" id="btnCloseGmailModal">Continue without changing</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js?v=20261023d"></script>
 </body>
 </html>

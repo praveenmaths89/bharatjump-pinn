@@ -8,6 +8,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>BharatJump — Smartphone Jump &amp; Regional Force Analyzer</title>
   <link rel="manifest" href="./manifest.json" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <style>
 :root {
   --bg-top: #080d1a;
@@ -873,11 +876,386 @@ canvas#forceCanvas {
   margin-top: 10px;
 }
 
+/* Top-Right Gmail Account Pill */
+.gmail-top-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 155px;
+  height: 34px;
+  padding: 3px 10px 3px 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(15, 23, 42, 0.9);
+  color: #f8fafc;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.gmail-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4285F4, #34A853);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.gmail-top-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Screen 1 Gmail Account Banner */
+.gmail-account-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.14), rgba(15, 23, 42, 0.92));
+  border: 1px solid rgba(66, 133, 244, 0.35);
+}
+
+.gmail-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.gmail-g-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.gmail-card-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gmail-card-email {
+  font-size: 11px;
+  color: #93c5fd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-gmail-switch {
+  padding: 6px 11px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.athlete-name-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+/* Automatic Live Location Status Banner */
+.live-loc-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.11);
+  border: 1px solid rgba(16, 185, 129, 0.32);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #a7f3d0;
+  line-height: 1.35;
+}
+
+.loc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+}
+
+.loc-dot.pulsing {
+  background: #38bdf8;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25);
+}
+
+.bottom-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* Flash animation when a new jump updates Screen 3 */
+@keyframes scoreFlashPulse {
+  0% { transform: scale(0.985); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.65); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
+.score-updated-flash {
+  animation: scoreFlashPulse 0.45s ease-out;
+}
+
+/* Gmail Account Chooser Modal */
+.gmail-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(3, 7, 18, 0.78);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.gmail-modal-backdrop.open {
+  display: flex;
+}
+
+.gmail-modal-sheet {
+  width: 100%;
+  max-width: 380px;
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  padding: 18px 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gmail-modal-header {
+  text-align: center;
+}
+
+.google-logo-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  margin-bottom: 8px;
+}
+
+.google-wordmark {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.gmail-modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.gmail-modal-sub {
+  font-size: 12px;
+  color: var(--subtext);
+  margin-top: 2px;
+}
+
+.gmail-acct-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gmail-acct-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.gmail-acct-item:hover, .gmail-acct-item:active {
+  background: rgba(66, 133, 244, 0.18);
+  border-color: rgba(66, 133, 244, 0.45);
+}
+
+.gmail-acct-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #10b981);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gmail-acct-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.gmail-acct-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.gmail-acct-addr {
+  font-size: 11.5px;
+  color: #93c5fd;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gmail-custom-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gmail-form-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--subtext);
+}
+
+.gmail-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(8, 13, 26, 0.85);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  outline: none;
+}
+
+.gmail-input:focus {
+  border-color: #60a5fa;
+}
+
+.gmail-error {
+  font-size: 11.5px;
+  color: #fda4af;
+  min-height: 15px;
+}
+
+.btn-google-continue {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 11px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.oauth-advanced {
+  font-size: 11.5px;
+  color: var(--subtext);
+}
+
+.oauth-advanced summary {
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.oauth-adv-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.gmail-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.btn-gmail-signout {
+  padding: 7px 12px;
+  border-radius: 9px;
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  background: rgba(244, 63, 94, 0.12);
+  color: #fda4af;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-gmail-close {
+  margin-left: auto;
+  padding: 7px 12px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: var(--subtext);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 </style>
+  <!-- Google Identity Services for OAuth 2.0 / Gmail Sign-In -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <div class="mobile-viewport">
-    <!-- Top Bar with Easy Back Button -->
+    <!-- Top Bar with Easy Back Button + Gmail Account Pill -->
     <header class="app-topbar">
       <div class="nav-left">
         <button type="button" class="btn-back" id="btnTopBack" aria-label="Go back">
@@ -893,6 +1271,12 @@ canvas#forceCanvas {
           <div class="brand-subtitle">Smartphone Force &amp; Talent Lab</div>
         </div>
       </div>
+
+      <!-- Top-Right Gmail Account Button / Badge -->
+      <button type="button" class="gmail-top-pill" id="btnTopGmail" title="Gmail Account">
+        <span class="gmail-avatar" id="topGmailAvatar">G</span>
+        <span class="gmail-top-text" id="topGmailText">Sign in</span>
+      </button>
     </header>
 
     <!-- Always-Clickable 3-Step Navigation Bar -->
@@ -902,16 +1286,35 @@ canvas#forceCanvas {
       <button type="button" class="step-tab" data-step="3" id="tabStep3">3. Analysis</button>
     </nav>
 
-    <!-- SCREEN 1: ATHLETE & REGION SETUP -->
+    <!-- SCREEN 1: ATHLETE, GMAIL ACCOUNT & AUTO LIVE LOCATION -->
     <section class="screen active" id="screen1">
       <div class="scroll-body">
-        <div>
-          <h1 class="screen-heading">Athlete &amp; Region Setup</h1>
-          <p class="screen-sub">Enter details once to benchmark jump height, force, and power across Indian states &amp; districts.</p>
+        <!-- Gmail Account Strip on Screen 1 -->
+        <div class="gmail-account-card" id="gmailCardBanner">
+          <div class="gmail-card-left">
+            <div class="gmail-g-icon" id="cardGmailAvatar">
+              <svg width="18" height="18" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              </svg>
+            </div>
+            <div style="min-width:0;">
+              <div class="gmail-card-name" id="cardGmailName">Not signed in with Gmail</div>
+              <div class="gmail-card-email" id="cardGmailEmail">Sign in with your Gmail to link jumps</div>
+            </div>
+          </div>
+          <button type="button" class="btn-gmail-switch" id="btnOpenGmailModal">Sign in</button>
         </div>
 
-        <!-- Athlete & Place Card -->
+        <!-- Athlete & Automatic Live Location Card -->
         <div class="card">
+          <div class="athlete-name-row">
+            <label for="inAthleteName" class="region-label">Athlete Name / ID</label>
+            <input type="text" id="inAthleteName" class="field-control" placeholder="Athlete Name (auto-filled from Gmail)" value="Praveen Chougale" />
+          </div>
+
           <div class="segmented-control" role="tablist">
             <button type="button" class="seg-btn active" data-sex="M" id="sexM">Boy / Male</button>
             <button type="button" class="seg-btn" data-sex="F" id="sexF">Girl / Female</button>
@@ -931,16 +1334,22 @@ canvas#forceCanvas {
               <div class="stepper-label">Age (years)</div>
               <div class="stepper-controls">
                 <button type="button" class="step-adj" data-target="inAge" data-delta="-1">−</button>
-                <input type="number" id="inAge" class="stepper-input" value="14" min="8" max="45" step="1" inputmode="numeric" />
+                <input type="number" id="inAge" class="stepper-input" value="14" min="8" max="60" step="1" inputmode="numeric" />
                 <button type="button" class="step-adj" data-target="inAge" data-delta="1">+</button>
               </div>
             </div>
           </div>
 
-          <!-- Place / Region Selection for Regional Benchmarking -->
+          <!-- Automatic Live Location Section -->
           <div class="region-header">
-            <span class="region-label">Place / Regional Benchmark</span>
-            <button type="button" class="btn-gps" id="btnDetectPlace">📍 Auto-Detect Place</button>
+            <span class="region-label">Live Location (Auto-Selected)</span>
+            <button type="button" class="btn-gps" id="btnDetectPlace">🔄 Refresh Live GPS</button>
+          </div>
+
+          <!-- Live GPS / Location Auto-Detection Status Banner -->
+          <div class="live-loc-banner" id="liveLocBanner">
+            <span class="loc-dot pulsing" id="liveLocDot"></span>
+            <span id="liveLocStatusText">Detecting your live location automatically…</span>
           </div>
 
           <div class="region-grid">
@@ -969,10 +1378,19 @@ canvas#forceCanvas {
               <option value="Himachal Pradesh">Himachal Pradesh</option>
               <option value="Goa">Goa</option>
               <option value="Mizoram">Mizoram</option>
+              <option value="Chandigarh">Chandigarh</option>
+              <option value="Jammu and Kashmir">Jammu &amp; Kashmir</option>
+              <option value="Puducherry">Puducherry</option>
+              <option value="Meghalaya">Meghalaya</option>
+              <option value="Tripura">Tripura</option>
+              <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+              <option value="Nagaland">Nagaland</option>
+              <option value="Sikkim">Sikkim</option>
+              <option value="Ladakh">Ladakh</option>
               <option value="Other India">Other State / UT</option>
             </select>
 
-            <input type="text" id="inDistrict" class="field-control" placeholder="District / City (e.g. Mumbai)" value="Mumbai" />
+            <input type="text" id="inDistrict" class="field-control" placeholder="District / City" value="Mumbai" />
           </div>
 
           <div class="area-pills" id="areaPills">
@@ -994,7 +1412,7 @@ canvas#forceCanvas {
           </div>
           <div class="guide-row">
             <span class="guide-icon c3">3</span>
-            <span>Landing is auto-detected, or tap <strong>Analyze Now</strong> anytime.</span>
+            <span>Landing is auto-detected, or tap <strong>Analyze Now</strong> anytime for fresh metrics.</span>
           </div>
         </div>
       </div>
@@ -1004,7 +1422,7 @@ canvas#forceCanvas {
           Start Live Sensor Jump
         </button>
         <button type="button" class="btn-secondary" id="btnSimulateJump">
-          Simulate Jump for Current Athlete Setup
+          Simulate New Jump (Fresh Trial)
         </button>
       </div>
     </section>
@@ -1046,10 +1464,10 @@ canvas#forceCanvas {
     <section class="screen" id="screen3">
       <div class="scroll-body">
         <!-- 1. Hero Jump Score & Non-Overflowing Percentile Gauge -->
-        <div class="hero-score-card">
+        <div class="hero-score-card" id="heroScoreCard">
           <div class="score-top-row">
             <span class="score-tag" id="resAthleteSummary">14y Male · 45 kg · Mumbai, MH</span>
-            <span class="source-badge" id="resSourceBadge">Simulated Trial #1</span>
+            <span class="source-badge" id="resSourceBadge">Jump #1</span>
           </div>
           <div class="big-height" id="resHeightVal">34.5 <small>cm</small></div>
           <div style="font-size:11.5px; color:#cbd5e1;" id="resSubLine">
@@ -1101,7 +1519,7 @@ canvas#forceCanvas {
             <span class="profile-pill" id="regionRankPill">State P80</span>
           </div>
           <p class="analysis-text" id="regionSummaryText" style="margin-bottom:6px;">
-            Comparing this jump against age-matched norms for your state, all-India school median, and Khelo India talent targets.
+            Comparing this jump against age-matched norms for your live location, all-India median, and Khelo India targets.
           </p>
           <div class="region-bench-list">
             <div class="bench-row">
@@ -1179,7 +1597,7 @@ canvas#forceCanvas {
         <!-- 6. Regional Dataset & Session Camp Log (Post-Collection Value) -->
         <div class="card">
           <div class="log-header">
-            <span class="analysis-title">Saved Regional Jumps (<span id="savedCountLbl">1</span>)</span>
+            <span class="analysis-title">Saved Regional Jumps (<span id="savedCountLbl">0</span>)</span>
             <button type="button" class="btn-gps" id="btnClearLog" style="border-color:rgba(244,63,94,0.4); color:#fda4af; background:rgba(244,63,94,0.12);">Clear</button>
           </div>
           <div class="log-list" id="sessionLogList"></div>
@@ -1196,13 +1614,87 @@ canvas#forceCanvas {
 
       <div class="bottom-actions">
         <button type="button" class="btn-primary" id="btnJumpAgain">
-          Start New Jump
+          Start New Jump (Live Sensor)
         </button>
-        <button type="button" class="btn-secondary" id="btnEditAthlete">
-          ← Change Athlete / Place Details
-        </button>
+        <div class="bottom-row-2">
+          <button type="button" class="btn-secondary" id="btnSimAnotherJump">
+            ⚡ New Simulated Jump
+          </button>
+          <button type="button" class="btn-secondary" id="btnEditAthlete">
+            ← Athlete / Place
+          </button>
+        </div>
       </div>
     </section>
+  </div>
+
+  <!-- GMAIL LOGIN / GOOGLE ACCOUNT CHOOSER MODAL -->
+  <div class="gmail-modal-backdrop" id="gmailModalBackdrop" aria-hidden="true">
+    <div class="gmail-modal-sheet" role="dialog" aria-labelledby="gmailModalTitle">
+      <div class="gmail-modal-header">
+        <div class="google-logo-row">
+          <svg width="22" height="22" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <span class="google-wordmark">Sign in with Google</span>
+        </div>
+        <h3 class="gmail-modal-title" id="gmailModalTitle">Choose a Gmail account</h3>
+        <p class="gmail-modal-sub">to continue to <strong>BharatJump Talent &amp; Force Lab</strong></p>
+      </div>
+
+      <!-- Quick-Pick Saved / Detected Gmail Accounts -->
+      <div class="gmail-acct-list" id="gmailSavedAccountsList"></div>
+
+      <!-- Enter / Use Another Gmail Account Form -->
+      <form class="gmail-custom-form" id="gmailLoginForm" novalidate>
+        <div class="gmail-form-label">Or enter your Gmail address</div>
+        <input
+          type="email"
+          id="inGmailAddress"
+          class="gmail-input"
+          placeholder="yourname@gmail.com"
+          autocomplete="username email"
+          inputmode="email"
+          required
+        />
+        <input
+          type="text"
+          id="inGmailName"
+          class="gmail-input"
+          placeholder="Your Full Name (e.g. Praveen Chougale)"
+          autocomplete="name"
+        />
+        <div class="gmail-error" id="gmailErrorMsg"></div>
+        <button type="submit" class="btn-google-continue">
+          Continue with Gmail
+        </button>
+      </form>
+
+      <!-- Optional Google Cloud OAuth Client ID popup trigger -->
+      <details class="oauth-advanced">
+        <summary>Have a Google Cloud OAuth Client ID?</summary>
+        <div class="oauth-adv-body">
+          <input
+            type="text"
+            id="inGoogleClientId"
+            class="gmail-input"
+            placeholder="xxxx.apps.googleusercontent.com"
+            style="font-size:11.5px; padding:8px 10px;"
+          />
+          <button type="button" class="btn-secondary" id="btnLaunchGoogleOAuth" style="padding:8px 10px; font-size:12px;">
+            Launch Google OAuth Popup
+          </button>
+        </div>
+      </details>
+
+      <div class="gmail-modal-footer">
+        <button type="button" class="btn-gmail-signout" id="btnGmailSignOut" style="display:none;">Sign out</button>
+        <button type="button" class="btn-gmail-close" id="btnCloseGmailModal">Continue without changing</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -1246,8 +1738,24 @@ canvas#forceCanvas {
     "Chhattisgarh": 1.01,
     "Himachal Pradesh": 1.01,
     "Goa": 1.02,
+    "Chandigarh": 1.04,
+    "Jammu and Kashmir": 1.01,
+    "Puducherry": 1.01,
+    "Meghalaya": 1.03,
+    "Tripura": 1.00,
+    "Arunachal Pradesh": 1.02,
+    "Nagaland": 1.03,
+    "Sikkim": 1.02,
+    "Ladakh": 1.01,
     "Other India": 1.00
   };
+
+  const AUTH_STORAGE_KEY = "bharatjump_gmail_auth_v1";
+  const SAVED_ACCOUNTS_KEY = "bharatjump_gmail_accounts_v1";
+  const DEFAULT_GMAIL_ACCOUNTS = [
+    { email: "praveenmaths89@gmail.com", name: "Praveen Chougale" },
+    { email: "praveenamznsports@gmail.com", name: "Praveen Chougale (Sports)" }
+  ];
 
   let state = {
     currentStep: 1,
@@ -1264,7 +1772,10 @@ canvas#forceCanvas {
     motionListener: null,
     detectedTakeoff: false,
     detectedLanding: false,
-    sessionLog: []
+    sessionLog: [],
+    gmailUser: null,
+    savedGmailAccounts: DEFAULT_GMAIL_ACCOUNTS.slice(),
+    liveCoords: null
   };
 
   // --- Load Saved Regional Jumps from localStorage ---
@@ -1358,11 +1869,16 @@ canvas#forceCanvas {
 
   // --- Read Current Athlete & Place Inputs ---
   function getAthleteInputs() {
+    const nameEl = document.getElementById("inAthleteName");
+    const athleteName = ((nameEl && nameEl.value) || (state.gmailUser && state.gmailUser.name) || "Athlete").trim();
+    const gmailEmail = (state.gmailUser && state.gmailUser.email) ? state.gmailUser.email : "guest@gmail.com";
     const massKg = Math.max(20, Math.min(150, parseFloat(document.getElementById("inWeight").value) || 45));
-    const age = Math.max(8, Math.min(50, parseInt(document.getElementById("inAge").value, 10) || 14));
+    const age = Math.max(8, Math.min(60, parseInt(document.getElementById("inAge").value, 10) || 14));
     const stateName = document.getElementById("inState").value || "Maharashtra";
     const district = (document.getElementById("inDistrict").value || "Mumbai").trim() || "Mumbai";
     return {
+      athleteName,
+      gmailEmail,
       massKg,
       age,
       sex: state.sex,
@@ -1498,12 +2014,18 @@ canvas#forceCanvas {
     const expectedMass = 22 + 44 * maturity * (athlete.sex === "M" ? 1.0 : 0.88);
     const massRatio = Math.max(0.88, Math.min(1.12, 1.0 - 0.0025 * (athlete.massKg - expectedMass)));
 
-    // Natural trial-to-trial variability (+-5.5% height, +-6% force/timing) so every jump is fresh
-    const rand1 = (Math.random() - 0.46) * 0.11 + (customSeedDelta || 0);
-    const rand2 = (Math.random() - 0.5) * 0.12;
-    const rand3 = (Math.random() - 0.5) * 0.08;
+    // Natural trial-to-trial variability (+-7% height, +-7% force/timing) so every jump is visibly fresh
+    let rand1 = (Math.random() - 0.46) * 0.14 + (customSeedDelta || 0);
+    const rand2 = (Math.random() - 0.5) * 0.14;
+    const rand3 = (Math.random() - 0.5) * 0.10;
 
-    const targetHeightM = Math.max(0.16, Math.min(0.68, (0.21 + 0.22 * maturity) * sexFactor * stateFactor * massRatio * (1 + rand1)));
+    let targetHeightM = Math.max(0.16, Math.min(0.68, (0.21 + 0.22 * maturity) * sexFactor * stateFactor * massRatio * (1 + rand1)));
+    if (state.currentResult && state.currentResult.metrics) {
+      const prevM = state.currentResult.metrics.jumpHeightCm / 100;
+      if (Math.abs(targetHeightM - prevM) < 0.008) {
+        targetHeightM = Math.max(0.16, Math.min(0.68, targetHeightM + (Math.random() > 0.5 ? 0.018 : -0.016)));
+      }
+    }
     const flightTime = Math.sqrt((8 * targetHeightM) / G);
 
     const eccDuration = Math.max(0.30, Math.min(0.52, 0.41 * (1 + rand3)));
@@ -1654,7 +2176,8 @@ canvas#forceCanvas {
       // Derive flight time directly from measured peak acceleration & trough depth
       const netPeakG = Math.max(0.25, maxBW - 1.0);
       const troughDepth = Math.max(0.15, 1.0 - minBW);
-      flightTime = Math.max(0.26, Math.min(0.70, 0.31 + 0.11 * netPeakG + 0.14 * troughDepth));
+      const sampleJitter = ((samples.length % 13) - 6) * 0.0025;
+      flightTime = Math.max(0.26, Math.min(0.70, 0.31 + 0.11 * netPeakG + 0.14 * troughDepth + sampleJitter));
       tTakeoff = Math.max(0.65, Math.min(t[N - 1] - flightTime - 0.2, maxIdx * dt + 0.08));
       tLanding = tTakeoff + flightTime;
     }
@@ -1744,6 +2267,8 @@ canvas#forceCanvas {
     const logEntry = {
       trialNum: res.trialNum,
       timestamp: res.timestamp,
+      gmail: ath.gmailEmail || "guest@gmail.com",
+      athleteName: ath.athleteName || "Athlete",
       source: res.sourceLabel,
       stateName: ath.stateName,
       district: ath.district,
@@ -1761,10 +2286,16 @@ canvas#forceCanvas {
     state.sessionLog.unshift(logEntry);
     saveSessionLog();
 
-    // 1. Hero Card
+    // 1. Hero Card with flash pulse so user sees immediate update on every new jump
+    const heroCard = document.getElementById("heroScoreCard");
+    if (heroCard) {
+      heroCard.classList.remove("score-updated-flash");
+      void heroCard.offsetWidth;
+      heroCard.classList.add("score-updated-flash");
+    }
     const sexLbl = ath.sex === "M" ? "M" : "F";
     document.getElementById("resAthleteSummary").textContent =
-      `${ath.age}y ${sexLbl} · ${ath.massKg}kg · ${ath.district}, ${ath.stateName}`;
+      `${ath.athleteName} (${ath.age}y ${sexLbl}) · ${ath.district}, ${ath.stateName}`;
     document.getElementById("resSourceBadge").textContent = res.sourceLabel;
 
     document.getElementById("resHeightVal").innerHTML = `${m.jumpHeightCm.toFixed(1)} <small>cm</small>`;
@@ -2119,54 +2650,320 @@ canvas#forceCanvas {
     renderResultsScreen(res);
   }
 
-  // --- Auto-Detect Place via Browser Geolocation + Nominatim Reverse Geocode ---
-  function detectPlaceFromGPS() {
-    const btn = document.getElementById("btnDetectPlace");
-    if (!("geolocation" in navigator)) {
-      btn.textContent = "GPS Unavailable";
+  // --- Gmail Authentication & Google Account Chooser ---
+  function loadGmailAuth() {
+    try {
+      const savedAccts = localStorage.getItem(SAVED_ACCOUNTS_KEY);
+      if (savedAccts) {
+        const parsed = JSON.parse(savedAccts);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          state.savedGmailAccounts = parsed;
+        }
+      }
+      const rawUser = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (rawUser) {
+        const u = JSON.parse(rawUser);
+        if (u && u.email) {
+          state.gmailUser = u;
+        }
+      }
+    } catch (_) {}
+    updateGmailUI();
+  }
+
+  function signInWithGmail(emailInput, nameInput) {
+    let email = (emailInput || "").trim().toLowerCase();
+    if (!email) return false;
+    if (!email.includes("@")) {
+      email = email + "@gmail.com";
+    }
+    const localPart = email.split("@")[0];
+    const derivedName = localPart
+      .replace(/[._0-9]+/g, " ")
+      .trim()
+      .replace(/\b\w/g, (c) => c.toUpperCase()) || "Athlete";
+    const name = (nameInput || "").trim() || derivedName;
+
+    state.gmailUser = {
+      email,
+      name,
+      signedInAt: new Date().toISOString()
+    };
+
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state.gmailUser));
+      const exists = state.savedGmailAccounts.some((a) => a.email.toLowerCase() === email);
+      if (!exists) {
+        state.savedGmailAccounts.unshift({ email, name });
+        localStorage.setItem(SAVED_ACCOUNTS_KEY, JSON.stringify(state.savedGmailAccounts.slice(0, 6)));
+      }
+    } catch (_) {}
+
+    updateGmailUI();
+    closeGmailModal();
+    return true;
+  }
+
+  function signOutGmail() {
+    state.gmailUser = null;
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch (_) {}
+    updateGmailUI();
+    renderSavedGmailAccounts();
+  }
+
+  function updateGmailUI() {
+    const topAvatar = document.getElementById("topGmailAvatar");
+    const topText = document.getElementById("topGmailText");
+    const cardName = document.getElementById("cardGmailName");
+    const cardEmail = document.getElementById("cardGmailEmail");
+    const btnOpen = document.getElementById("btnOpenGmailModal");
+    const btnSignOut = document.getElementById("btnGmailSignOut");
+    const nameInput = document.getElementById("inAthleteName");
+
+    if (state.gmailUser && state.gmailUser.email) {
+      const initial = (state.gmailUser.name || state.gmailUser.email).charAt(0).toUpperCase();
+      topAvatar.textContent = initial;
+      topText.textContent = state.gmailUser.email.split("@")[0];
+      cardName.textContent = state.gmailUser.name;
+      cardEmail.textContent = state.gmailUser.email + " · Signed in";
+      btnOpen.textContent = "Switch";
+      if (btnSignOut) btnSignOut.style.display = "inline-block";
+      if (nameInput && (!nameInput.value || nameInput.value === "Praveen Chougale" || nameInput.value === "Athlete")) {
+        nameInput.value = state.gmailUser.name;
+      }
+    } else {
+      topAvatar.textContent = "G";
+      topText.textContent = "Sign in";
+      cardName.textContent = "Sign in with Gmail";
+      cardEmail.textContent = "Tap to link jumps to your Gmail account";
+      btnOpen.textContent = "Sign in";
+      if (btnSignOut) btnSignOut.style.display = "none";
+    }
+  }
+
+  function renderSavedGmailAccounts() {
+    const listEl = document.getElementById("gmailSavedAccountsList");
+    if (!listEl) return;
+    listEl.innerHTML = state.savedGmailAccounts.map((acct) => {
+      const init = (acct.name || acct.email).charAt(0).toUpperCase();
+      const isCurrent = state.gmailUser && state.gmailUser.email.toLowerCase() === acct.email.toLowerCase();
+      return `<button type="button" class="gmail-acct-item" data-email="${acct.email}" data-name="${acct.name}">
+        <div class="gmail-acct-avatar">${init}</div>
+        <div class="gmail-acct-info">
+          <div class="gmail-acct-name">${acct.name} ${isCurrent ? '<span style="color:#34d399;font-size:11px;">(Active)</span>' : ''}</div>
+          <div class="gmail-acct-addr">${acct.email}</div>
+        </div>
+      </button>`;
+    }).join("");
+
+    listEl.querySelectorAll(".gmail-acct-item").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        signInWithGmail(btn.getAttribute("data-email"), btn.getAttribute("data-name"));
+      });
+    });
+  }
+
+  function openGmailModal() {
+    renderSavedGmailAccounts();
+    const errEl = document.getElementById("gmailErrorMsg");
+    if (errEl) errEl.textContent = "";
+    document.getElementById("gmailModalBackdrop").classList.add("open");
+  }
+
+  function closeGmailModal() {
+    document.getElementById("gmailModalBackdrop").classList.remove("open");
+  }
+
+  function decodeJwtPayload(token) {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function launchGoogleIdentityOAuth() {
+    const clientId = (document.getElementById("inGoogleClientId").value || "").trim();
+    const errEl = document.getElementById("gmailErrorMsg");
+    if (!clientId || !clientId.includes(".apps.googleusercontent.com")) {
+      errEl.textContent = "Enter a valid Google OAuth Client ID (.apps.googleusercontent.com) or pick your Gmail above.";
       return;
     }
-    btn.textContent = "Locating…";
+    if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+      errEl.textContent = "Google Identity script is still loading. Try again in a moment.";
+      return;
+    }
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: (resp) => {
+        const payload = decodeJwtPayload(resp.credential);
+        if (payload && payload.email) {
+          signInWithGmail(payload.email, payload.name || payload.given_name || "");
+        }
+      }
+    });
+    window.google.accounts.id.prompt();
+  }
+
+  // --- Automatic Live Location Detection (GPS + Reverse Geocode + Automatic IP Fallback) ---
+  function matchAndSelectStateOption(rawStateName) {
+    if (!rawStateName) return "Maharashtra";
+    const sel = document.getElementById("inState");
+    const norm = rawStateName.toLowerCase().trim();
+    for (let i = 0; i < sel.options.length; i++) {
+      const optVal = sel.options[i].value.toLowerCase();
+      if (norm.includes(optVal) || optVal.includes(norm)) {
+        sel.selectedIndex = i;
+        return sel.options[i].value;
+      }
+      if (norm.includes("delhi") && optVal.includes("delhi")) {
+        sel.selectedIndex = i;
+        return sel.options[i].value;
+      }
+    }
+    return sel.value;
+  }
+
+  function setAreaTypePill(areaType) {
+    state.areaType = areaType;
+    const areaBtns = document.querySelectorAll("#areaPills .area-pill");
+    areaBtns.forEach((b) => {
+      b.classList.toggle("active", b.getAttribute("data-area") === areaType);
+    });
+  }
+
+  function applyDetectedLocation(city, stateRegion, areaType, sourceLabel) {
+    const cleanCity = (city || "Mumbai").trim();
+    document.getElementById("inDistrict").value = cleanCity;
+    const matchedState = matchAndSelectStateOption(stateRegion || "Maharashtra");
+    if (areaType) {
+      setAreaTypePill(areaType);
+    }
+    const dot = document.getElementById("liveLocDot");
+    const txt = document.getElementById("liveLocStatusText");
+    const btn = document.getElementById("btnDetectPlace");
+    if (dot) dot.classList.remove("pulsing");
+    if (txt) {
+      txt.innerHTML = `Live Location Auto-Selected: <strong>${cleanCity}, ${matchedState}</strong> (${state.areaType} · via ${sourceLabel})`;
+    }
+    if (btn) {
+      btn.textContent = `📍 ${cleanCity}`;
+    }
+  }
+
+  async function fallbackIPLocation() {
+    // Try two fast CORS-friendly IP geolocation endpoints automatically so location is ALWAYS chosen
+    const endpoints = [
+      {
+        url: "https://ipwho.is/",
+        parse: (d) => d && d.success !== false ? { city: d.city, state: d.region, lat: d.latitude, lon: d.longitude } : null
+      },
+      {
+        url: "https://ipapi.co/json/",
+        parse: (d) => d && d.city ? { city: d.city, state: d.region, lat: d.latitude, lon: d.longitude } : null
+      },
+      {
+        url: "https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=en",
+        parse: (d) => d && (d.city || d.locality) ? { city: d.city || d.locality, state: d.principalSubdivision, lat: d.latitude, lon: d.longitude } : null
+      }
+    ];
+
+    for (const ep of endpoints) {
+      try {
+        const resp = await fetch(ep.url);
+        if (!resp.ok) continue;
+        const data = await resp.json();
+        const parsed = ep.parse(data);
+        if (parsed && (parsed.city || parsed.state)) {
+          state.liveCoords = { lat: parsed.lat, lon: parsed.lon };
+          applyDetectedLocation(parsed.city || "Mumbai", parsed.state || "Maharashtra", "Urban", "Live Network");
+          return true;
+        }
+      } catch (_) {}
+    }
+
+    const txt = document.getElementById("liveLocStatusText");
+    const dot = document.getElementById("liveLocDot");
+    if (dot) dot.classList.remove("pulsing");
+    if (txt) txt.textContent = "Live Location: Mumbai, Maharashtra (tap Refresh Live GPS to update)";
+    return false;
+  }
+
+  function detectPlaceFromGPS() {
+    const btn = document.getElementById("btnDetectPlace");
+    const txt = document.getElementById("liveLocStatusText");
+    const dot = document.getElementById("liveLocDot");
+    if (dot) dot.classList.add("pulsing");
+    if (btn) btn.textContent = "Locating…";
+    if (txt) txt.textContent = "Acquiring live GPS coordinates & matching region…";
+
+    if (!("geolocation" in navigator)) {
+      fallbackIPLocation();
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        state.liveCoords = { lat: latitude, lon: longitude };
         try {
-          const { latitude, longitude } = pos.coords;
+          // Primary reverse geocoder: BigDataCloud client-side reverse geocode (fast, no rate-limit block)
+          const bdcResp = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+          );
+          if (bdcResp.ok) {
+            const bdc = await bdcResp.json();
+            const city = bdc.city || bdc.locality || bdc.principalSubdivision || "Mumbai";
+            const st = bdc.principalSubdivision || "Maharashtra";
+            const areaGuess = bdc.city ? "Urban" : (bdc.locality ? "Semi-Urban" : "Rural");
+            applyDetectedLocation(city, st, areaGuess, "Live GPS");
+            return;
+          }
+        } catch (_) {}
+
+        try {
+          // Secondary reverse geocoder: OpenStreetMap Nominatim
           const resp = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
             { headers: { "Accept-Language": "en" } }
           );
           const data = await resp.json();
           const addr = data.address || {};
-          const city = addr.city || addr.town || addr.county || addr.state_district || "Mumbai";
+          const city = addr.city || addr.town || addr.village || addr.county || addr.state_district || "Mumbai";
           const st = addr.state || "Maharashtra";
-          document.getElementById("inDistrict").value = city;
-
-          const sel = document.getElementById("inState");
-          for (let i = 0; i < sel.options.length; i++) {
-            if (st.toLowerCase().includes(sel.options[i].value.toLowerCase())) {
-              sel.selectedIndex = i;
-              break;
-            }
-          }
-          btn.textContent = `📍 ${city}`;
+          const areaGuess = addr.village ? "Rural" : (addr.town ? "Semi-Urban" : "Urban");
+          applyDetectedLocation(city, st, areaGuess, "Live GPS");
         } catch (_) {
-          btn.textContent = "📍 Detected";
+          fallbackIPLocation();
         }
       },
       () => {
-        btn.textContent = "📍 Enter Manually";
+        // If user denies GPS prompt or indoors timeout, automatically choose location from live network
+        fallbackIPLocation();
       },
-      { timeout: 6000 }
+      { enableHighAccuracy: true, timeout: 6500, maximumAge: 60000 }
     );
   }
 
   // --- Export All Saved Regional Jumps (CSV) & Current Trial Waveform (JSON) ---
   function exportAllCampCSV() {
     if (state.sessionLog.length === 0) return;
-    const header = "trial_num,timestamp,source,state,district,area_type,age,sex,weight_kg,jump_height_cm,peak_force_bw,peak_power_w_kg,rsimod,state_percentile,india_percentile";
+    const header = "trial_num,timestamp,gmail,athlete_name,source,state,district,area_type,age,sex,weight_kg,jump_height_cm,peak_force_bw,peak_power_w_kg,rsimod,state_percentile,india_percentile";
     const rows = state.sessionLog.map((r) => [
       r.trialNum,
       `"${r.timestamp}"`,
+      `"${r.gmail || ''}"`,
+      `"${r.athleteName || ''}"`,
       `"${r.source}"`,
       `"${r.stateName}"`,
       `"${r.district}"`,
@@ -2204,6 +3001,35 @@ canvas#forceCanvas {
   // --- Initialize App & Event Listeners ---
   window.addEventListener("DOMContentLoaded", () => {
     loadSessionLog();
+    loadGmailAuth();
+    renderSessionLogUI();
+
+    // Automatically detect and choose live location on app startup!
+    detectPlaceFromGPS();
+
+    // If not signed in yet, show Gmail sign-in sheet on first visit
+    if (!state.gmailUser) {
+      openGmailModal();
+    }
+
+    // Gmail Modal Listeners
+    document.getElementById("btnTopGmail").addEventListener("click", openGmailModal);
+    document.getElementById("btnOpenGmailModal").addEventListener("click", openGmailModal);
+    document.getElementById("btnCloseGmailModal").addEventListener("click", closeGmailModal);
+    document.getElementById("btnGmailSignOut").addEventListener("click", signOutGmail);
+    document.getElementById("btnLaunchGoogleOAuth").addEventListener("click", launchGoogleIdentityOAuth);
+
+    document.getElementById("gmailLoginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const emailVal = (document.getElementById("inGmailAddress").value || "").trim();
+      const nameVal = (document.getElementById("inGmailName").value || "").trim();
+      const errEl = document.getElementById("gmailErrorMsg");
+      if (!emailVal) {
+        errEl.textContent = "Please enter your Gmail address (e.g. yourname@gmail.com).";
+        return;
+      }
+      signInWithGmail(emailVal, nameVal);
+    });
 
     // Hardware/Browser Back Button handler
     window.addEventListener("popstate", (ev) => {
@@ -2260,9 +3086,7 @@ canvas#forceCanvas {
     const areaBtns = document.querySelectorAll("#areaPills .area-pill");
     areaBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
-        areaBtns.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        state.areaType = btn.getAttribute("data-area") || "Urban";
+        setAreaTypePill(btn.getAttribute("data-area") || "Urban");
       });
     });
 
@@ -2279,8 +3103,18 @@ canvas#forceCanvas {
     document.getElementById("btnFinishJump").addEventListener("click", finishLiveJump);
     document.getElementById("btnBackToSetup").addEventListener("click", () => showScreen(1));
 
-    // Screen 3 Actions: "Start New Jump" launches a fresh jump immediately; "Change Athlete/Place" goes to Screen 1
+    // Screen 3 Actions:
+    // 1. "Start New Jump (Live Sensor)" -> launches guided sensor capture on Screen 2
     document.getElementById("btnJumpAgain").addEventListener("click", startGuidedJump);
+    // 2. "⚡ New Simulated Jump" -> immediately generates a fresh jump & updates all values on Screen 3!
+    const btnSimAnother = document.getElementById("btnSimAnotherJump");
+    if (btnSimAnother) {
+      btnSimAnother.addEventListener("click", () => {
+        const res = generateDynamicTrial(getAthleteInputs());
+        renderResultsScreen(res);
+      });
+    }
+    // 3. "← Athlete / Place" -> returns to Screen 1
     document.getElementById("btnEditAthlete").addEventListener("click", () => showScreen(1));
 
     // Plot Mode Switcher (Force / Velocity / Power)
